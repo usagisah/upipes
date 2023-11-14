@@ -1,8 +1,8 @@
-import { definePipes } from "./main"
-import { zip } from "./zip"
+import { setTimeout as timer } from "timers/promises"
+import { definePipes } from "./pipe"
 
-describe("pipes", () => {
-  test("基本调用，正常，一次", () => {
+describe("基本调用", () => {
+  test("正常一次", () => {
     const f = vi.fn()
     const fn = definePipes([
       function ({ status, value }, next) {
@@ -23,7 +23,7 @@ describe("pipes", () => {
     expect(f).toHaveBeenCalledTimes(2)
   })
 
-  test("基本调用，异常，一次", () => {
+  test("异常一次", () => {
     const f = vi.fn()
     const fn = definePipes([
       function ({ status, value }, next) {
@@ -44,7 +44,7 @@ describe("pipes", () => {
     expect(f).toHaveBeenCalledTimes(2)
   })
 
-  test("多次调用，正常，三次", () => {
+  test("多次调用，正常三次", () => {
     const f = vi.fn()
     const fn = definePipes([
       function ({ status, value }, next) {
@@ -72,9 +72,7 @@ describe("pipes", () => {
       },
       function ({ status, value }, next) {
         count++
-        count === 1
-          ? expect(status).toBe("success")
-          : expect(status).toBe("fail")
+        count === 1 ? expect(status).toBe("success") : expect(status).toBe("fail")
         next(value + 1)
       }
     ])
@@ -82,7 +80,9 @@ describe("pipes", () => {
     fn(1)
     expect(count).toBe(2)
   })
+})
 
+describe("特殊属性", () => {
   test("test skip", () => {
     const f = vi.fn()
     const fn = definePipes([
@@ -101,7 +101,7 @@ describe("pipes", () => {
 
   test("属性不可更改", () => {
     const fn = definePipes([
-      function (ctx, next) {
+      function (ctx) {
         expect(() => ((ctx as any).value = 1)).toThrow()
         expect(() => ((ctx as any).status = 1)).toThrow()
       }
@@ -110,10 +110,10 @@ describe("pipes", () => {
     fn(1)
   })
 
-  test("test loop", () => {
+  test("loop", () => {
     let count = 0
     const fn = definePipes([
-      function ({ status, value }, next) {
+      function ({ value }, next) {
         count++
         if (count === 1) {
           expect(value).toBe(1)
@@ -126,19 +126,63 @@ describe("pipes", () => {
     fn(1)
     expect(count).toBe(2)
   })
+})
 
-  test("zip", () => {
-    let count = 0
+describe("关闭", () => {
+  test("closed()", () => {
     const fn = definePipes([
-      zip(3),
-      function ({ value }) {
-        expect(value).toEqual([1, 2, 3])
-        count++
+      function (_, next) {
+        next()
       }
     ])
-    fn(1)
-    fn(2)
-    fn(3)
-    expect(count).toBe(1)
+    expect(fn.closed()).toBe(false)
+
+    fn.close()
+    expect(fn.closed()).toBe(true)
+  })
+
+  test("禁止正常调用", () => {
+    const p1 = vi.fn()
+    const fn = definePipes([ctx => p1(ctx)])
+
+    fn.close()
+    expect(() => fn()).toThrow()
+    expect(p1).not.toHaveBeenLastCalledWith({ status: "close", value: undefined })
+    expect(p1).toBeCalledTimes(1)
+  })
+
+  test("循环终止", async () => {
+    let count = 0
+    const fn = definePipes([
+      (_, next) => {
+        count++
+        setTimeout(() => next(null, { loop: true }))
+      }
+    ])
+
+    fn()
+    fn.close()
+    await timer(50)
+    expect(count).toBe(2)
+  })
+
+  test("next 外置调用", () => {
+    const origin = console.error
+    const f = (console.error = vi.fn())
+
+    let innerNext: any
+    const fn = definePipes([(_, next) => {
+      innerNext = next
+      next()
+    }])
+    fn()
+    fn.close()
+    innerNext()
+    innerNext()
+
+    expect(f).toHaveBeenCalledWith("管道流已经关闭, next 调用失败")
+    expect(f).toHaveBeenCalledTimes(2)
+
+    console.error = origin
   })
 })

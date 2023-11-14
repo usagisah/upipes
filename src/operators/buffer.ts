@@ -1,6 +1,6 @@
-import { PipeFactory } from "./main"
+import { Pipe } from "../pipe/pipe.type"
 
-export function zip(count = 1): PipeFactory {
+export function buffer(count = 1): Pipe {
   const values: any[] = []
   return ({ status, value }, next) => {
     if (status === "success") {
