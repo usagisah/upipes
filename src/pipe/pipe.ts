@@ -24,18 +24,24 @@ function createPipeNodes(pipes: Pipe[]): PipeNode {
   return head
 }
 
-function createNext(node: PipeNode) {
+type Context = { close: any }
+
+function createNext(node: PipeNode, ctx: Context) {
   return function next(status: PipeContextStatus, value: any, options?: PipeNextOptions) {
     let { closed, next } = node
     if (closed) return console.error("管道流已经关闭, next 调用失败"), undefined
 
-    const { skip, loop } = options ?? {}
+    const { skip, loop, forceClose } = options ?? {}
+    if (status !== "close" && forceClose) {
+      return ctx.close()
+    }
+
     if (loop) {
       if (status === "close") return (node.closed = true), undefined
 
       let _node = node
       while (_node.prev) _node = _node.prev
-      createNext(_node)("success", value)
+      createNext(_node, ctx)("success", value)
     }
 
     try {
@@ -46,7 +52,7 @@ function createNext(node: PipeNode) {
 
       if (skip) return
 
-      const pipeNext = createNext(next)
+      const pipeNext = createNext(next, ctx)
       try {
         next.pipe(
           {
@@ -81,13 +87,13 @@ export function definePipes(pipes: Pipe[]) {
     if (nodeClosed) {
       throw "the pipe has been closed"
     }
-    return createNext(node)("success", value)
+    return createNext(node, { close })("success", value)
   }
 
-  factory.close = (fn: any) => {
+  function close(fn: any) {
     if (nodeClosed) return
     nodeClosed = true
-    createNext(node)("close", null)
+    createNext(node, { close })("close", null)
     if (isFunction(fn)) {
       try {
         fn()
@@ -96,7 +102,7 @@ export function definePipes(pipes: Pipe[]) {
       }
     }
   }
-
+  factory.close = close
   factory.closed = () => nodeClosed
 
   return factory as PipeFactory

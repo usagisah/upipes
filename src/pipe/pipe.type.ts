@@ -7,6 +7,7 @@ export type PipeContext = {
 export type PipeNextOptions = {
   skip?: boolean
   loop?: boolean
+  forceClose?: boolean
 }
 export type PipeNext = (value?: any, options?: PipeNextOptions) => void
 
