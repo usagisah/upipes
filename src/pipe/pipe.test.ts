@@ -171,10 +171,12 @@ describe("关闭", () => {
     const f = (console.error = vi.fn())
 
     let innerNext: any
-    const fn = definePipes([(_, next) => {
-      innerNext = next
-      next()
-    }])
+    const fn = definePipes([
+      (_, next) => {
+        innerNext = next
+        next()
+      }
+    ])
     fn()
     fn.close()
     innerNext()

@@ -5,12 +5,6 @@
 
 ## pipe
 
-todo
-
-- 选项
-  - 允许中途结束
-  - 是否强制结束
-
 
 
 ## observable

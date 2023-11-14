@@ -4,9 +4,12 @@ import { buffer } from "./buffer"
 describe("operator buffer", () => {
   test("基本使用", () => {
     const p2 = vi.fn()
-    const fn = definePipes([buffer(2), ctx => {
-      p2(ctx)
-    }])
+    const fn = definePipes([
+      buffer(2),
+      ctx => {
+        p2(ctx)
+      }
+    ])
 
     ;[1, 2, 3].forEach(fn)
     fn.close()
