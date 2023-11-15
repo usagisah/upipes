@@ -1,6 +1,6 @@
 import { setTimeout } from "timers/promises"
-import { of } from "../of/of"
-import { fromAll } from "./fromAll"
+import { of } from "../of/of.js"
+import { fromAll } from "./fromAll.js"
 
 describe("fromAll", () => {
   test("base", async () => {

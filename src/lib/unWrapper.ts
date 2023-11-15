@@ -1,7 +1,7 @@
-import { Observable } from "../observable/createObservable/createObservable"
-import { isObservable } from "../observable/createObservable/isObservable"
-import { isFunction, isPromise } from "./check"
-import { Func } from "./type"
+import { Observable } from "../observable/createObservable/createObservable.js"
+import { isObservable } from "../observable/createObservable/isObservable.js"
+import { isFunction, isPromise } from "./check.js"
+import { Func } from "./type.js"
 
 export async function unWrapper(value: unknown, ob: Observable, done: Func) {
   if (Array.isArray(value)) {

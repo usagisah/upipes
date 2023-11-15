@@ -1,7 +1,7 @@
-import { isFunction } from "../lib/check"
-import { Pipe, PipeContextStatus, PipeFactory, PipeNextOptions } from "./pipe.type"
+import { isFunction } from "../lib/check.js"
+import { Pipe, PipeContextStatus, PipeFactory, PipeNextOptions } from "./pipe.type.js"
 
-export * from "./pipe.type"
+export * from "./pipe.type.js"
 
 class PipeNode {
   closed = false
@@ -34,9 +34,7 @@ function createNext(node: PipeNode, ctx: Context) {
     if (closed) return console.error("管道流已经关闭, next 调用失败"), undefined
 
     const { skip, loop, forceClose } = options ?? {}
-    if (status !== "close" && forceClose) {
-      return ctx.close()
-    }
+    if (status !== "close" && forceClose) return ctx.close()
 
     if (loop) {
       if (status === "close") return (node.closed = true), undefined
@@ -47,32 +45,27 @@ function createNext(node: PipeNode, ctx: Context) {
     }
 
     try {
+      if (skip) return
+
       if (!next) {
         if (status === "fail") throw value
         return
       }
 
-      if (skip) return
-
       const pipeNext = createNext(next, ctx)
+      const pipeContext = {
+        get status() {
+          return status
+        },
+        get value() {
+          return value
+        }
+      }
       try {
-        next.pipe(
-          {
-            get status() {
-              return status
-            },
-            get value() {
-              return value
-            }
-          },
-          pipeNext.bind(null, status === "close" ? "close" : "success")
-        )
+        next.pipe(pipeContext, pipeNext.bind(null, status === "close" ? status : "success"))
       } catch (e) {
         if (status !== "close") pipeNext("fail", e)
-        else {
-          console.error(e)
-          pipeNext("close", null)
-        }
+        else console.error(e), pipeNext!("close", undefined)
       }
     } finally {
       if (status === "close") node.closed = true
@@ -93,7 +86,7 @@ export function definePipes(pipes: Pipe[]) {
   function close(fn: any) {
     if (nodeClosed) return
     nodeClosed = true
-    createNext(node, { close })("close", null)
+    createNext(node, { close })("close", undefined)
     if (isFunction(fn)) {
       try {
         fn()

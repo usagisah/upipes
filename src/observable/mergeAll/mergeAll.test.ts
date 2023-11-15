@@ -1,5 +1,5 @@
-import { defer } from "../defer/defer"
-import { mergeAll } from "./mergeAll"
+import { defer } from "../defer/defer.js"
+import { mergeAll } from "./mergeAll.js"
 
 describe("mergeAll", () => {
   test("sequence", () => {

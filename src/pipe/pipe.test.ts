@@ -1,7 +1,7 @@
 import { setTimeout as timer } from "timers/promises"
-import { definePipes } from "./pipe"
+import { definePipes } from "./pipe.js"
 
-describe("基本调用", () => {
+describe("正常调用", () => {
   test("正常一次", () => {
     const f = vi.fn()
     const fn = definePipes([
@@ -60,26 +60,6 @@ describe("基本调用", () => {
     fn(1)
     expect(f).toHaveBeenCalledTimes(3)
   })
-
-  test("多次调用，正常混合异常", () => {
-    let count = 0
-    const fn = definePipes([
-      function ({ status, value }, next) {
-        expect(status).toBe("success")
-        expect(value).toBe(1)
-        next(value + 1)
-        throw value + 1
-      },
-      function ({ status, value }, next) {
-        count++
-        count === 1 ? expect(status).toBe("success") : expect(status).toBe("fail")
-        next(value + 1)
-      }
-    ])
-
-    fn(1)
-    expect(count).toBe(2)
-  })
 })
 
 describe("特殊属性", () => {
@@ -119,7 +99,7 @@ describe("特殊属性", () => {
           expect(value).toBe(1)
           next(2, { loop: true })
         } else if (count === 2) expect(value).toBe(2)
-        else throw "循环不合法"
+        else throw new Error("循环不合法")
       }
     ])
 
@@ -147,7 +127,7 @@ describe("关闭", () => {
 
     fn.close()
     expect(() => fn()).toThrow()
-    expect(p1).not.toHaveBeenLastCalledWith({ status: "close", value: undefined })
+    expect(p1).toHaveBeenLastCalledWith({ status: "close", value: undefined })
     expect(p1).toBeCalledTimes(1)
   })
 
@@ -183,9 +163,46 @@ describe("关闭", () => {
     innerNext()
     innerNext()
 
-    expect(f).toHaveBeenCalledWith("管道流已经关闭, next 调用失败")
     expect(f).toHaveBeenCalledTimes(2)
+    expect(f).toHaveBeenCalledWith("管道流已经关闭, next 调用失败")
 
     console.error = origin
+  })
+})
+
+describe("其他用法", () => {
+  test("多次调用，正常混合异常", () => {
+    let count = 0
+    const fn = definePipes([
+      function ({ status, value }, next) {
+        expect(status).toBe("success")
+        expect(value).toBe(1)
+        next(value + 1)
+        throw value + 1
+      },
+      function ({ status, value }, next) {
+        count++
+        count === 1 ? expect(status).toBe("success") : expect(status).toBe("fail")
+        next(value + 1)
+      }
+    ])
+
+    fn(1)
+    expect(count).toBe(2)
+  })
+
+  test("多个异常传递", () => {
+    const p3 = vi.fn()
+    const fn = definePipes([
+      () => {
+        throw 1
+      },
+      () => {
+        throw 2
+      },
+      ctx => p3(ctx)
+    ])
+    fn()
+    expect(p3).toBeCalledWith({ status: "fail", value: 2 })
   })
 })

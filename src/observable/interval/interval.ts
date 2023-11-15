@@ -1,7 +1,7 @@
-import { Pipe } from "../../pipe/pipe.type"
-import { isFunction, isNumber } from "../../lib/check"
-import { Func } from "../../lib/type"
-import { lazyObservable } from "../createObservable/lazyObservable"
+import { Pipe } from "../../pipe/pipe.type.js"
+import { isFunction, isNumber } from "../../lib/check.js"
+import { Func } from "../../lib/type.js"
+import { lazyObservable } from "../createObservable/lazyObservable.js"
 
 export function interval<T = number>(pipes: Pipe[], timer: number, value?: T | Func<[number], T>) {
   return lazyObservable<T>(pipes, ob => {

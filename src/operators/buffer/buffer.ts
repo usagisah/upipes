@@ -1,4 +1,4 @@
-import { Pipe } from "../pipe/pipe.type"
+import { Pipe } from "../../pipe/pipe.type.js"
 
 export function buffer(count = 1): Pipe {
   const values: any[] = []

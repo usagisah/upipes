@@ -1,4 +1,4 @@
-import { interval } from "./interval"
+import { interval } from "./interval.js"
 
 describe("interval", () => {
   test("base with default value", () => {

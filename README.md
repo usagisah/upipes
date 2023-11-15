@@ -64,8 +64,6 @@ todo
   - 出错时，自动重试
 - timeout 
   - 超时后自动关闭，未完成的会直接丢弃
-- concatMap
-  - 收到值交给参数处理，顺序处理所有的
 - mergeMap()
   - 控制并发
 - switchMap(timer)

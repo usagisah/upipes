@@ -1,7 +1,7 @@
-import { isNumber } from "../../lib/check"
-import { Pipe } from "../../pipe/pipe.type"
-import { isObservable } from "../createObservable/isObservable"
-import { lazyObservable } from "../createObservable/lazyObservable"
+import { isNumber } from "../../lib/check.js"
+import { Pipe } from "../../pipe/pipe.type.js"
+import { isObservable } from "../createObservable/isObservable.js"
+import { lazyObservable } from "../createObservable/lazyObservable.js"
 
 export function mergeAll<T = any>(pipes: Pipe[], values: any[], limit?: number) {
   const _limit = isNumber(limit) && limit > 0 ? limit : 1

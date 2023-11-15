@@ -1,7 +1,7 @@
-import { definePipes } from "../../pipe/pipe"
-import { Pipe, PipeContextStatus } from "../../pipe/pipe.type"
-import { isFunction, isPlainObject } from "../../lib/check"
-import { Func } from "../../lib/type"
+import { isFunction, isPlainObject } from "../../lib/check.js"
+import { Func } from "../../lib/type.js"
+import { definePipes } from "../../pipe/pipe.js"
+import { Pipe, PipeContextStatus } from "../../pipe/pipe.type.js"
 
 const emptyFunc = () => null
 
@@ -12,7 +12,7 @@ export type Observable<T = any> = {
   then: (fn: Func<[T], void>, config?: SubscribeConfigs) => Func
   catch: (fn: Func<[any], void>, config?: SubscribeConfigs) => Func
   finalize: (fn: Func<[void], void>) => Func
-  getValue: () => T
+  getValue: () => T | undefined
   resolveValue: () => Promise<T>
   __upipes_Observable__: true
 }
@@ -21,25 +21,31 @@ export type SubscribeConfigs = {
   once?: boolean
 }
 
-export function createObservable<T>(pipes?: Pipe[]): Observable<T> {
+export function createObservable<T = any>(pipes?: Pipe[]): Observable<T> {
   const subscriber: Record<PipeContextStatus, LinkedList> = {
     success: new LinkedList(),
     fail: new LinkedList(),
     close: new LinkedList()
   }
 
-  let lastValue: any = undefined
+  let entered = 0
+  const emit = new Emit()
   const pf = definePipes([
     ...(Array.isArray(pipes) ? pipes : []),
     function subPipe({ status, value }) {
       const list = subscriber[status]
       if (list.size === 0 && status === "fail") throw value
+
+      entered--
+      emit.call(value)
       list.call(value)
-      lastValue = value
     }
   ])
 
-  const call = (...args: any[]) => pf(...args)
+  const call = (...args: any[]) => {
+    entered++
+    pf(...args)
+  }
 
   function subscribe(type: PipeContextStatus, fn: Func, config?: SubscribeConfigs): Func {
     if (!isFunction(fn)) return () => emptyFunc
@@ -62,7 +68,10 @@ export function createObservable<T>(pipes?: Pipe[]): Observable<T> {
 
   return {
     call,
-    close: pf.close,
+    close: function close() {
+      emit.close()
+      pf.close()
+    },
     closed: pf.closed,
     then: function then(fn: Func<[T], void>, config?: SubscribeConfigs): Func {
       return subscribe("success", fn, config)
@@ -73,8 +82,12 @@ export function createObservable<T>(pipes?: Pipe[]): Observable<T> {
     finalize: function finalize(fn: Func<[void], void>): Func {
       return subscribe("close", fn)
     },
-    getValue: () => lastValue,
-    resolveValue: async () => lastValue,
+    getValue: () => emit.value,
+    resolveValue: () => {
+      if (pf.closed()) return Promise.resolve(undefined as any)
+      if (entered === 0) return Promise.resolve(emit.value)
+      return new Promise<T>(resolve => emit.pending.push(resolve))
+    },
     __upipes_Observable__: true
   }
 }
@@ -121,5 +134,21 @@ class LinkedList {
       node.value(value)
       node = node.next
     }
+  }
+}
+
+class Emit {
+  value: any
+  pending: Func[] = []
+
+  call(value: any) {
+    this.value = value
+    for (const p of this.pending) p(value)
+    this.pending.length = 0
+  }
+
+  close() {
+    this.value = undefined
+    this.call(undefined)
   }
 }

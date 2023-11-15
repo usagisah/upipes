@@ -1,4 +1,4 @@
-import { defer } from "./defer"
+import { defer } from "./defer.js"
 
 describe("defer", () => {
   test("base", () => {

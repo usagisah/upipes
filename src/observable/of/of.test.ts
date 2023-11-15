@@ -1,4 +1,4 @@
-import { of } from "./of"
+import { of } from "./of.js"
 
 describe("of", () => {
   test("base", () => {

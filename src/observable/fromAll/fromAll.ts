@@ -1,9 +1,9 @@
-import { isFunction, isPlainObject } from "../../lib/check"
-import { Func } from "../../lib/type"
-import { unWrapper } from "../../lib/unWrapper"
-import { Pipe } from "../../pipe/pipe.type"
-import { Observable } from "../createObservable/createObservable"
-import { lazyObservable } from "../createObservable/lazyObservable"
+import { isFunction, isPlainObject } from "../../lib/check.js"
+import { Func } from "../../lib/type.js"
+import { unWrapper } from "../../lib/unWrapper.js"
+import { Pipe } from "../../pipe/pipe.type.js"
+import { Observable } from "../createObservable/createObservable.js"
+import { lazyObservable } from "../createObservable/lazyObservable.js"
 
 type FromAllConfigs = {
   factory?: (options: { value: unknown; observable: Observable; done: Func; unWrapper: Func }) => any

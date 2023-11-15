@@ -1,4 +1,4 @@
-import { lazyObservable } from "./lazyObservable"
+import { lazyObservable } from "./lazyObservable.js"
 
 describe("lazyObservable", () => {
   test("subscriber", () => {

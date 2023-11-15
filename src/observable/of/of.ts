@@ -1,5 +1,5 @@
-import { Pipe } from "../../pipe/pipe.type"
-import { lazyObservable } from "../createObservable/lazyObservable"
+import { Pipe } from "../../pipe/pipe.type.js"
+import { lazyObservable } from "../createObservable/lazyObservable.js"
 
 export function of<T = any>(pipes: Pipe[], ...args: T[]) {
   return lazyObservable<T>(pipes, ob => {

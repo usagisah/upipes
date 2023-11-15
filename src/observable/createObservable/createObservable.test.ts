@@ -1,4 +1,4 @@
-import { createObservable } from "./createObservable"
+import { createObservable } from "./createObservable.js"
 
 describe("createObservable-then", () => {
   test("flag", () => {
@@ -57,8 +57,8 @@ describe("createObservable-then", () => {
     expect(ob.resolveValue()).resolves.toBe(100)
 
     ob.close()
-    expect(ob.getValue()).toBe(null)
-    expect(ob.resolveValue()).resolves.toBe(null)
+    expect(ob.getValue()).toBe(undefined)
+    expect(ob.resolveValue()).resolves.toBe(undefined)
   })
 })
 
@@ -109,7 +109,7 @@ describe("createObservable-finalize", () => {
     expect(ob.closed()).toBe(false)
     ob.close(sub)
 
-    expect(sub).toHaveBeenCalledTimes(2)
+    expect(sub).toHaveBeenCalledTimes(1)
     expect(ob.closed()).toBe(true)
   })
 })
