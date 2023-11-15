@@ -42,22 +42,6 @@ describe("createObservable-then", () => {
 
     expect(sub).toHaveBeenCalledTimes(1)
   })
-
-  test("lazy", () => {
-    const p1 = vi.fn(({ value }, next) => next(value))
-    const sub = vi.fn()
-    const ob = createObservable([p1], { lazy: true })
-
-    ob.call(10)
-    expect(p1).not.toBeCalled()
-
-    ob.then(sub)
-    ob.call(20)
-    
-    expect(sub).toBeCalledTimes(2)
-    expect(sub).toHaveBeenNthCalledWith(1, 10)
-    expect(sub).toHaveBeenNthCalledWith(2, 20)
-  })
 })
 
 describe("createObservable-catch", () => {
@@ -90,7 +74,7 @@ describe("createObservable-catch", () => {
     const ob = createObservable([throwPipe])
     ob.catch(sub, { once: true })
     ob.call(10)
-    
+
     expect(() => ob.call(10)).toThrow()
     expect(sub).toHaveBeenCalledTimes(1)
   })

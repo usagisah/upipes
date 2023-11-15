@@ -1,19 +1,24 @@
-import { definePipes } from "../pipe/pipe"
-import { Pipe, PipeContextStatus } from "../pipe/pipe.type"
-import { isFunction, isPlainObject } from "../utils/check"
-import { Func } from "../utils/type"
+import { definePipes } from "../../pipe/pipe"
+import { Pipe, PipeContextStatus } from "../../pipe/pipe.type"
+import { isFunction, isPlainObject } from "../../utils/check"
+import { Func } from "../../utils/type"
 
 const emptyFunc = () => null
 
-export type ObservableConfig = {
-  lazy: boolean
+export type Observable<T> = {
+  call: (value: T) => void;
+  close: (fn?: (() => any) | undefined) => void;
+  closed: () => boolean;
+  then: (fn: Func<[T], void>, config?: SubscribeConfigs) => Func;
+  catch: (fn: Func<[any], void>, config?: SubscribeConfigs) => Func;
+  finalize: (fn: Func<[void], void>) => Func;
 }
 
 export type SubscribeConfigs = {
   once?: boolean
 }
 
-export function createObservable<T>(pipes?: Pipe[], configs?: ObservableConfig) {
+export function createObservable<T>(pipes?: Pipe[]): Observable<T> {
   const subscriber: Record<PipeContextStatus, LinkedList> = {
     success: new LinkedList(),
     fail: new LinkedList(),
@@ -29,12 +34,8 @@ export function createObservable<T>(pipes?: Pipe[], configs?: ObservableConfig) 
     }
   ])
 
-  const { lazy = false } = isPlainObject(configs) ? configs : {}
   const info = { size: 0, values: [] as any[] }
-  const call = (value: T) => {
-    if (!lazy || info.size > 0) return pf(value)
-    else return info.values.push(value), undefined
-  }
+  const call = (value: T) => pf(value)
 
   function subscribe(type: PipeContextStatus, fn: Func, config?: SubscribeConfigs): Func {
     if (!isFunction(fn)) return () => emptyFunc
@@ -54,11 +55,6 @@ export function createObservable<T>(pipes?: Pipe[], configs?: ObservableConfig) 
       : fn
     const node = subscriber[type].append(_fn)
     if (node) info.size++
-    if (lazy && info.values.length > 0) {
-      const _values = [...info.values]
-      info.values = []
-      _values.forEach(pf)
-    }
     return unSubscribe
   }
 
