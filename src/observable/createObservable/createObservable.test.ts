@@ -1,6 +1,11 @@
 import { createObservable } from "./createObservable"
 
 describe("createObservable-then", () => {
+  test("flag", () => {
+    const ob = createObservable()
+    expect(ob.__upipes_Observable__).toBeTruthy()
+  })
+
   test("base then", () => {
     const sub = vi.fn()
     const ob = createObservable()
@@ -41,6 +46,19 @@ describe("createObservable-then", () => {
     ob.call(10)
 
     expect(sub).toHaveBeenCalledTimes(1)
+  })
+
+  test("get value", () => {
+    const ob = createObservable<number>()
+
+    ob.call(10)
+    ob.call(100)
+    expect(ob.getValue()).toBe(100)
+    expect(ob.resolveValue()).resolves.toBe(100)
+
+    ob.close()
+    expect(ob.getValue()).toBe(null)
+    expect(ob.resolveValue()).resolves.toBe(null)
   })
 })
 

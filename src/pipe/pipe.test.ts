@@ -152,18 +152,19 @@ describe("关闭", () => {
   })
 
   test("循环终止", async () => {
-    let count = 0
-    const fn = definePipes([
-      (_, next) => {
-        count++
-        setTimeout(() => next(null, { loop: true }))
-      }
-    ])
+    const origin = console.error
+    const error = (console.error = vi.fn())
+    const p1 = vi.fn((_, next) => setTimeout(() => next(null, { loop: true })))
+    const fn = definePipes([p1])
 
     fn()
     fn.close()
     await timer(50)
-    expect(count).toBe(2)
+
+    expect(p1).toBeCalledTimes(2)
+    expect(error).toBeCalled()
+
+    console.error = origin
   })
 
   test("next 外置调用", () => {

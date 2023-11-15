@@ -1,5 +1,5 @@
+import { Func } from "../../lib/type"
 import { Pipe } from "../../pipe/pipe.type"
-import { Func } from "../../utils/type"
 import { Observable, createObservable } from "./createObservable"
 
 export function lazyObservable<T = any>(pipes: Pipe[], subscriber: Func<[Observable<T>], any>): Observable<T> {
@@ -7,13 +7,12 @@ export function lazyObservable<T = any>(pipes: Pipe[], subscriber: Func<[Observa
   const recover = proxyMethods(ob, (type, ...args) => {
     const values = recover()
     ob[type](...args)
-    
+
     for (const v of values) ob.call(v)
     try {
       subscriber(ob)
-    }
-    catch(e) {
-      console.error("lazyObservable 发现未知的错误", e)
+    } catch (e) {
+      console.error(e)
     }
   })
   return ob

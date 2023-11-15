@@ -1,5 +1,7 @@
-import { isFunction } from "../utils/check"
+import { isFunction } from "../lib/check"
 import { Pipe, PipeContextStatus, PipeFactory, PipeNextOptions } from "./pipe.type"
+
+export * from "./pipe.type"
 
 class PipeNode {
   closed = false
@@ -68,7 +70,7 @@ function createNext(node: PipeNode, ctx: Context) {
       } catch (e) {
         if (status !== "close") pipeNext("fail", e)
         else {
-          console.error("pipe close 过程发现错误", e)
+          console.error(e)
           pipeNext("close", null)
         }
       }
@@ -83,11 +85,9 @@ export function definePipes(pipes: Pipe[]) {
 
   let nodeClosed = node.closed
 
-  function factory(value: any) {
-    if (nodeClosed) {
-      throw "the pipe has been closed"
-    }
-    return createNext(node, { close })("success", value)
+  function factory(value: any, type: string) {
+    if (nodeClosed) throw new Error("the pipe has been closed")
+    return createNext(node, { close })(type === "fail" ? type : "success", value)
   }
 
   function close(fn: any) {
@@ -98,7 +98,7 @@ export function definePipes(pipes: Pipe[]) {
       try {
         fn()
       } catch (e) {
-        console.error("pipe close 执行出错:", e)
+        console.error(e)
       }
     }
   }

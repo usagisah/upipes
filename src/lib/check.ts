@@ -9,3 +9,11 @@ export function isString(value: unknown): value is string {
 export function isPlainObject<T extends Record<string, any>>(value: unknown): value is T {
   return Object.prototype.toString.call(value) === "[object Object]"
 }
+
+export function isNumber(value: unknown): value is number {
+  return !Number.isNaN(value) && typeof value === "number"
+}
+
+export function isPromise<T = any>(value: unknown): value is Promise<T> {
+  return Object.prototype.toString.call(value) === "[object Promise]"
+}

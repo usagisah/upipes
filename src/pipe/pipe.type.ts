@@ -13,8 +13,8 @@ export type PipeNext = (value?: any, options?: PipeNextOptions) => void
 
 export type Pipe = (context: PipeContext, next: PipeNext) => any
 
-export type PipeFactory = {
-  (value?: any): void
+export interface PipeFactory {
+  (value?: any, type?: "fail"): void
   closed: () => boolean
   close: (fn?: () => any) => void
 }

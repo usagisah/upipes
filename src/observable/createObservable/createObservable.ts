@@ -1,17 +1,20 @@
 import { definePipes } from "../../pipe/pipe"
 import { Pipe, PipeContextStatus } from "../../pipe/pipe.type"
-import { isFunction, isPlainObject } from "../../utils/check"
-import { Func } from "../../utils/type"
+import { isFunction, isPlainObject } from "../../lib/check"
+import { Func } from "../../lib/type"
 
 const emptyFunc = () => null
 
-export type Observable<T> = {
-  call: (value: T) => void;
-  close: (fn?: (() => any) | undefined) => void;
-  closed: () => boolean;
-  then: (fn: Func<[T], void>, config?: SubscribeConfigs) => Func;
-  catch: (fn: Func<[any], void>, config?: SubscribeConfigs) => Func;
-  finalize: (fn: Func<[void], void>) => Func;
+export type Observable<T = any> = {
+  call: (value?: T, type?: "fail") => void
+  close: (fn?: (() => any) | undefined) => void
+  closed: () => boolean
+  then: (fn: Func<[T], void>, config?: SubscribeConfigs) => Func
+  catch: (fn: Func<[any], void>, config?: SubscribeConfigs) => Func
+  finalize: (fn: Func<[void], void>) => Func
+  getValue: () => T
+  resolveValue: () => Promise<T>
+  __upipes_Observable__: true
 }
 
 export type SubscribeConfigs = {
@@ -25,24 +28,24 @@ export function createObservable<T>(pipes?: Pipe[]): Observable<T> {
     close: new LinkedList()
   }
 
+  let lastValue: any = undefined
   const pf = definePipes([
     ...(Array.isArray(pipes) ? pipes : []),
     function subPipe({ status, value }) {
       const list = subscriber[status]
       if (list.size === 0 && status === "fail") throw value
       list.call(value)
+      lastValue = value
     }
   ])
 
-  const info = { size: 0, values: [] as any[] }
-  const call = (value: T) => pf(value)
+  const call = (...args: any[]) => pf(...args)
 
   function subscribe(type: PipeContextStatus, fn: Func, config?: SubscribeConfigs): Func {
     if (!isFunction(fn)) return () => emptyFunc
     const { once = false } = isPlainObject(config) ? config : {}
     const unSubscribe = () => {
-      const res = subscriber[type].remove(node)
-      if (res) info.size--
+      subscriber[type].remove(node)
     }
     const _fn = once
       ? function (value: any) {
@@ -54,7 +57,6 @@ export function createObservable<T>(pipes?: Pipe[]): Observable<T> {
         }
       : fn
     const node = subscriber[type].append(_fn)
-    if (node) info.size++
     return unSubscribe
   }
 
@@ -70,7 +72,10 @@ export function createObservable<T>(pipes?: Pipe[]): Observable<T> {
     },
     finalize: function finalize(fn: Func<[void], void>): Func {
       return subscribe("close", fn)
-    }
+    },
+    getValue: () => lastValue,
+    resolveValue: async () => lastValue,
+    __upipes_Observable__: true
   }
 }
 
