@@ -1,11 +1,8 @@
 # upipes
+
 异步流式处理器
 
-
-
 ## pipe
-
-
 
 ## observable
 
@@ -36,33 +33,32 @@ todo
     - 等待 pipe
   - 支持传入函数自定义
 
-
-
 ## operators
 
 todo
 
 - buffer
+
   - websocket 压缩数量后发射
   - 点击了一定数量后开启
 
-- catchError 
+- catchError
   - 语法糖，只处理异常
 - complete
   - 语法糖，结束时出发
 - map 处理正常
   - 语法糖，正常时触发
-- take 
+- take
   - 只处理指定数量，之后自动销毁
-- tap 
+- tap
   - 调试
-- delay 
+- delay
   - 延迟
-- filter 
+- filter
   - 筛选
-- retry 
+- retry
   - 出错时，自动重试
-- timeout 
+- timeout
   - 超时后自动关闭，未完成的会直接丢弃
 - mergeMap()
   - 控制并发

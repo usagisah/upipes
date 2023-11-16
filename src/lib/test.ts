@@ -18,3 +18,11 @@ export function passError(value: any): Pipe {
     next(value)
   }
 }
+
+export function silentConsoleError(fn: any = () => null) {
+  const origin = console.error
+  console.error = fn
+  return function restore() {
+    console.error = origin
+  }
+}

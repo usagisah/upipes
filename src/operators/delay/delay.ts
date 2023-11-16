@@ -1,11 +1,16 @@
-import { isNumber } from "../../lib/check.js"
+import { isFunction, isNumber } from "../../lib/check.js"
+import { Func } from "../../lib/type.js"
 import { Pipe } from "../../pipe/pipe.type.js"
 import { map } from "../map/map.js"
 
-export function delay(timeout: number): Pipe {
+export function delay(timeoutOrFn: number | Func<[], any>): Pipe {
+  let _timeout = 0
+  let _getTimeout = () => _timeout
+  if (isNumber(timeoutOrFn)) _timeout = timeoutOrFn
+  else if(isFunction(timeoutOrFn)) _getTimeout = timeoutOrFn
   return map(value => {
     return new Promise<any>(resolve => {
-      setTimeout(() => resolve(value), isNumber(timeout) ? timeout : 0)
+      setTimeout(() => resolve(value), _getTimeout())
     })
   })
 }

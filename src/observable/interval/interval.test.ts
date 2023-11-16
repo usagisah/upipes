@@ -28,7 +28,6 @@ describe("interval", () => {
     vi.restoreAllMocks()
   })
 
-
   test("function value", () => {
     vi.useFakeTimers()
     const value = "interval"

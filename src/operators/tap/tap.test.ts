@@ -1,5 +1,6 @@
-import { createObservable, tap } from "../../index.js"
+import { createObservable } from "../../index.js"
 import { passValue } from "../../lib/test.js"
+import { tap } from "./tap.js"
 
 test("tap", () => {
   const p2 = vi.fn(() => 100)

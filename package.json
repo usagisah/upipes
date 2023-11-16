@@ -7,9 +7,10 @@
   "scripts": {
     "test": "vitest",
     "build": "node scribes/build.js",
-    "format": "prettier -w src/**/*.ts"
+    "format": "prettier --write src/**/*.ts"
   },
   "exports": {
+    ".": "./index.js",
     "./*": {
       "types": "./*.d.ts",
       "default": "./*.js"

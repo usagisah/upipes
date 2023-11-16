@@ -41,11 +41,11 @@ describe("mergeAll", () => {
     const sub = vi.fn()
     o.then(sub)
     o.close()
-    
+
     expect(() => vi.advanceTimersByTime(2000)).toThrow()
     expect(sub).toHaveBeenCalledTimes(0)
     expect(o.closed()).toBeTruthy()
-    
+
     vi.restoreAllMocks()
   })
 })

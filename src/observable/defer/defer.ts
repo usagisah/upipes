@@ -1,12 +1,15 @@
-import { Pipe } from "../../pipe/pipe.type.js";
-import { isNumber } from "../../lib/check.js";
-import { lazyObservable } from "../createObservable/lazyObservable.js";
+import { isNumber } from "../../lib/check.js"
+import { Pipe } from "../../pipe/pipe.type.js"
+import { lazyObservable } from "../createObservable/lazyObservable.js"
 
 export function defer<T = any>(pipes: Pipe[], timeout = 0, value?: T) {
   return lazyObservable<T | undefined>(pipes, ob => {
-    setTimeout(() => {
-      ob.call(value)
-      ob.close()
-    }, isNumber(timeout) ? timeout : 0)
+    setTimeout(
+      () => {
+        ob.call(value)
+        ob.close()
+      },
+      isNumber(timeout) ? timeout : 0
+    )
   })
 }

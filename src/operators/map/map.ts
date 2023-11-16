@@ -10,7 +10,9 @@ export function map(fn: Func<[any]>): Pipe {
     if (status === "close") return next(value)
 
     const res = fn(value)
-    if (isPromise(res)) res.then(next)
+    if (isPromise(res)) res.then(r => {
+      next(r)
+    })
     else next(res)
   }
 }

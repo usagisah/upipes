@@ -8,13 +8,9 @@
     "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": [
-      "vitest/globals"
-    ],
+    "types": ["vitest/globals"],
     /* Linting */
-    "strict": true,
+    "strict": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

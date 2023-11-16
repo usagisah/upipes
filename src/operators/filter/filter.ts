@@ -1,8 +1,13 @@
 import { isFunction } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
 import { Pipe } from "../../pipe/pipe.type.js"
-import { map } from "../map/map.js"
+import { empty } from "../empty.js"
 
 export function filter(fn: Func<[any], boolean>): Pipe {
-  return map(isFunction(fn) ? fn : () => true)
+  if (!isFunction(fn)) return empty
+  return ({ status, value }, next) => {
+    if (status === "fail") throw value
+    if (status === "close") return next(value)
+    if (fn(value)) next(value)
+  }
 }
