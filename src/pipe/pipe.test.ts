@@ -1,208 +1,270 @@
-import { setTimeout as timer } from "timers/promises"
-import { definePipes } from "./pipe.js"
+import { applyError, applySuccess, nextError, nextSuccess, silentConsoleError } from "../lib/test.js"
+import { PF, createPipes } from "./pipe.js"
 
-describe("正常调用", () => {
-  test("正常一次", () => {
-    const f = vi.fn()
-    const fn = definePipes([
-      function ({ status, value }, next) {
-        expect(status).toBe("success")
-        expect(value).toBe(1)
-        f()
-        next(value + 1)
-      },
-      function ({ status, value }, next) {
-        expect(status).toBe("success")
-        expect(value).toBe(2)
-        f()
-        next(value + 1)
-      }
-    ])
-
-    fn(1)
-    expect(f).toHaveBeenCalledTimes(2)
+describe("success", () => {
+  test("once", () => {
+    const pf = vi.fn(v => v + 1)
+    createPipes([applySuccess(pf)]).next(1)
+    expect(pf).toHaveBeenCalledOnce()
   })
 
-  test("异常一次", () => {
-    const f = vi.fn()
-    const fn = definePipes([
-      function ({ status, value }, next) {
-        expect(status).toBe("success")
-        expect(value).toBe(1)
-        f()
-        throw value + 1
-      },
-      function ({ status, value }, next) {
-        expect(status).toBe("fail")
-        expect(value).toBe(2)
-        f()
-        next(value + 1)
-      }
-    ])
+  test("multiple call", () => {
+    const pf = vi.fn(v => v + 1)
+    const pipes = createPipes([applySuccess(pf)])
 
-    fn(1)
-    expect(f).toHaveBeenCalledTimes(2)
+    pipes.next(1).next(2)
+    expect(pf).toHaveBeenCalledTimes(2)
   })
 
-  test("多次调用，正常三次", () => {
-    const f = vi.fn()
-    const fn = definePipes([
-      function ({ status, value }, next) {
-        expect(status).toBe("success")
-        expect(value).toBe(1)
-        next(value + 1)
-        next(value + 1)
-        next(value + 1)
-      },
-      f
-    ])
+  test("get value", () => {
+    const pipes = createPipes([])
+    pipes.next(1).next(10)
 
-    fn(1)
-    expect(f).toHaveBeenCalledTimes(3)
+    expect(pipes.value()).toBe(10)
+  })
+
+  test("resolve value", () => {
+    const pipes = createPipes([])
+
+    expect(pipes.resolve()).resolves.toBe(1)
+    pipes.next(1)
+
+    expect(pipes.resolve()).resolves.toBe(10)
+    pipes.next(10)
   })
 })
 
-describe("特殊属性", () => {
-  test("test skip", () => {
-    const f = vi.fn()
-    const fn = definePipes([
-      function ({ status, value }, next) {
-        expect(status).toBe("success")
-        expect(value).toBe(1)
-        next(value + 1, { skip: true })
-        next(value + 1)
-      },
-      f
-    ])
+describe("error", () => {
+  test("once", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
+    const pipes = createPipes([])
 
-    fn(1)
-    expect(f).toBeCalledTimes(1)
+    pipes.error(99)
+    expect(err).toHaveBeenCalledOnce()
+    expect(err).toBeCalledWith(99)
+
+    errRestore()
   })
 
-  test("属性不可更改", () => {
-    const fn = definePipes([
-      function (ctx) {
-        expect(() => ((ctx as any).value = 1)).toThrow()
-        expect(() => ((ctx as any).status = 1)).toThrow()
-      }
-    ])
+  test("透传 error", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
 
-    fn(1)
+    const pf = vi.fn()
+    const pipes = createPipes([applyError(pf), applyError(pf)])
+
+    pipes.error(99)
+    expect(pf).toHaveBeenCalledTimes(2)
+    expect(err).toHaveBeenCalledOnce()
+    expect(err).toBeCalledWith(99)
+
+    errRestore()
   })
 
-  test("loop", () => {
-    let count = 0
-    const fn = definePipes([
-      function ({ value }, next) {
-        count++
-        if (count === 1) {
-          expect(value).toBe(1)
-          next(2, { loop: true })
-        } else if (count === 2) expect(value).toBe(2)
-        else throw new Error("循环不合法")
-      }
-    ])
+  test("get value", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
+    const pipes = createPipes([])
 
-    fn(1)
-    expect(count).toBe(2)
+    pipes.error(99)
+    expect(pipes.value()).toBe(99)
+
+    errRestore()
+  })
+
+  test("resolve value", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
+    const pipes = createPipes([])
+
+    expect(pipes.resolve()).resolves.toBe(99)
+    pipes.error(99)
+
+    errRestore()
   })
 })
 
 describe("关闭", () => {
   test("closed()", () => {
-    const fn = definePipes([
-      function (_, next) {
-        next()
-      }
-    ])
+    const fn = createPipes([])
+
     expect(fn.closed()).toBe(false)
-
     fn.close()
-    expect(fn.closed()).toBe(true)
+    expect(fn.closed()).toBeTruthy()
   })
 
-  test("禁止正常调用", () => {
-    const p1 = vi.fn()
-    const fn = definePipes([ctx => p1(ctx)])
+  test("禁止相关api调用", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
+    const pipes = createPipes([])
 
-    fn.close()
-    expect(() => fn()).toThrow()
-    expect(p1).toHaveBeenLastCalledWith({ status: "close", value: undefined })
-    expect(p1).toBeCalledTimes(1)
+    pipes.close()
+    pipes.next().next().error().error().close()
+    expect(err).toHaveBeenCalledTimes(4)
+    expect(pipes.closed()).toBeTruthy()
+
+    errRestore()
   })
 
-  test("循环终止", async () => {
-    const origin = console.error
-    const error = (console.error = vi.fn())
-    const p1 = vi.fn((_, next) => setTimeout(() => next(null, { loop: true })))
-    const fn = definePipes([p1])
+  test("最终值全是 undefined", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
 
-    fn()
-    fn.close()
-    await timer(50)
+    const pipes = createPipes([])
+    expect(pipes.resolve()).resolves.toBe(1)
+    pipes.next(1).next(1).close()
+    expect(pipes.closed()).toBeTruthy()
+    expect(pipes.value()).toBeUndefined()
+    expect(pipes.resolve()).resolves.toBeUndefined()
 
-    expect(p1).toBeCalledTimes(2)
-    expect(error).toBeCalled()
+    const pipes1 = createPipes([])
+    expect(pipes1.resolve()).resolves.toBeUndefined()
+    try {
+      pipes1.error()
+    } catch {}
+    try {
+      pipes1.error()
+    } catch {}
+    pipes1.close()
+    expect(pipes1.closed()).toBeTruthy()
+    expect(pipes1.value()).toBeUndefined()
+    expect(pipes1.resolve()).resolves.toBeUndefined()
 
-    console.error = origin
+    errRestore()
   })
 
-  test("next 外置调用", () => {
-    const origin = console.error
-    const f = (console.error = vi.fn())
+  test("透传 && 管道内容", () => {
+    const pf1 = vi.fn()
+    const pf2 = vi.fn()
+    const pipes = createPipes([ctx => pf1(ctx), ctx => pf2(ctx)])
+    pipes.close("a")
 
-    let innerNext: any
-    const fn = definePipes([
-      (_, next) => {
-        innerNext = next
-        next()
-      }
-    ])
-    fn()
-    fn.close()
-    innerNext()
-    innerNext()
+    expect(pf1).toHaveBeenCalledOnce()
+    expect(pf1).toBeCalledWith({ status: "close", value: "a" })
+    expect(pf2).toHaveBeenCalledOnce()
+    expect(pf2).toBeCalledWith({ status: "close", value: "a" })
+  })
 
-    expect(f).toHaveBeenCalledTimes(2)
-    expect(f).toHaveBeenCalledWith("管道流已经关闭, next 调用失败")
+  test("自定义传递内容", () => {
+    const pf2 = vi.fn()
+    const pipes = createPipes([(ctx, next) => next(ctx.value + 1), ({ value }) => pf2(value)])
+    pipes.close(10)
 
-    console.error = origin
+    expect(pf2).toHaveBeenCalledOnce()
+    expect(pf2).toBeCalledWith(11)
+  })
+
+  test("同步 多次 next", () => {
+    const pf2 = vi.fn()
+    const pipes = createPipes([(_, next) => (next(1), next(2)), ({ value }) => pf2(value)])
+    pipes.close(9)
+
+    expect(pf2).toHaveBeenCalledOnce()
+    expect(pf2).toBeCalledWith(2)
+  })
+
+  test("无视异步调用", () => {
+    vi.useFakeTimers()
+    const pf2 = vi.fn()
+    const pipes = createPipes([(_, next) => setTimeout(() => next(10)), ({ value }) => pf2(value)])
+    pipes.close()
+
+    vi.advanceTimersByTime(1000)
+    expect(pf2).toHaveBeenCalledOnce()
+    expect(pf2).toBeCalledWith(undefined)
   })
 })
 
-describe("其他用法", () => {
-  test("多次调用，正常混合异常", () => {
-    let count = 0
-    const fn = definePipes([
-      function ({ status, value }, next) {
-        expect(status).toBe("success")
-        expect(value).toBe(1)
-        next(value + 1)
-        throw value + 1
-      },
-      function ({ status, value }, next) {
-        count++
-        count === 1 ? expect(status).toBe("success") : expect(status).toBe("fail")
-        next(value + 1)
-      }
-    ])
+describe("混合操作", () => {
+  test("pipe-status success -> error", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
 
-    fn(1)
-    expect(count).toBe(2)
+    createPipes([nextError(99)]).next(1)
+    expect(err).toBeCalled()
+
+    errRestore()
   })
 
-  test("多个异常传递", () => {
-    const p3 = vi.fn()
-    const fn = definePipes([
-      () => {
-        throw 1
+  test("pipe-status error -> success", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError(err)
+
+    createPipes([nextSuccess(99)]).error(1)
+    expect(err).not.toBeCalled()
+
+    errRestore()
+  })
+})
+
+describe("next 特殊属性", () => {
+  test("skip", () => {
+    const pf = vi.fn()
+    createPipes([(_, next) => next(null, { skip: true }), pf])
+      .next(1)
+      .error(2)
+    expect(pf).not.toBeCalled()
+  })
+
+  test("loop", () => {
+    let first1 = true
+    const pf1: PF = (_, next) => next(100, { loop: first1 ? ((first1 = false), true) : false })
+    const pf11 = vi.fn()
+    createPipes([(ctx, next) => (pf11(ctx), next(ctx.value)), pf1]).next(1)
+    expect(pf11).toBeCalledTimes(2)
+    expect(pf11).toBeCalledWith({ status: "success", value: 1 })
+
+    let first2 = true
+    const pf2: PF = (_, next) => next(100, { loop: first2 ? ((first2 = false), true) : false })
+    const pf22 = vi.fn()
+    createPipes([(ctx, next) => (pf22(ctx), next(ctx.value)), pf2]).error(1)
+    expect(pf22).toBeCalledTimes(2)
+    expect(pf22).toBeCalledWith({ status: "error", value: 1 })
+  })
+
+  test("forceClose", () => {
+    const pf = vi.fn()
+    const pipes = createPipes([(_, next) => next(null, { forceClose: true }), pf])
+    pipes.next(1).error(2)
+    expect(pf).toHaveBeenCalledOnce()
+    expect(pipes.closed()).toBeTruthy()
+  })
+})
+
+describe("other operate", () => {
+  test("call multiple next", () => {
+    const err = vi.fn()
+    const errRestore = silentConsoleError()
+    vi.useFakeTimers()
+
+    const pf = vi.fn()
+    const pipes = createPipes([
+      (_, next) => {
+        next()
+        next()
+        setTimeout(next, 1000)
       },
-      () => {
-        throw 2
-      },
-      ctx => p3(ctx)
-    ])
-    fn()
-    expect(p3).toBeCalledWith({ status: "fail", value: 2 })
+      pf
+    ]).next()
+    expect(pf).toHaveBeenCalledTimes(2)
+
+    pipes.close()
+    vi.advanceTimersByTime(1000)
+    expect(pf).toHaveBeenCalledTimes(3)
+    expect(err).not.toBeCalled()
+
+    errRestore()
+  })
+
+  test("next 外置调用", () => {
+    const pf = vi.fn()
+
+    let innerNext: any
+    createPipes([(_, next) => ((innerNext = next), next()), pf]).next()
+    innerNext()
+    innerNext()
+
+    expect(pf).toHaveBeenCalledTimes(3)
   })
 })

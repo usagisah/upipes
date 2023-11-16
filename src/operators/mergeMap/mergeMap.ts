@@ -1,10 +1,10 @@
 import { isFunction, isNumber } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
 import { createObservable } from "../../observable/createObservable/createObservable.js"
-import { Pipe, PipeNext } from "../../pipe/pipe.type.js"
+import { PF, PipeNext } from "../../pipe/pipe.type.js"
 import { map } from "../map/map.js"
 
-export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], boolean>): Pipe {
+export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], boolean>): PF {
   let max = 1
   let parallel = 0
   let checkLimit: any = (parallel: number) => parallel > max
@@ -39,7 +39,7 @@ export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], bo
 
   return (ctx, next) => {
     const { status, value } = ctx
-    if (status === "fail") throw value
+    if (status === "error") throw value
     if (status === "close") {
       close = true
       pending.length = 0
@@ -47,7 +47,7 @@ export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], bo
     }
 
     pending.push(value)
-    if (checkLimit(parallel + 1)) return 
+    if (checkLimit(parallel + 1)) return
     tryNext(next)
   }
 }

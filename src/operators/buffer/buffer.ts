@@ -1,6 +1,6 @@
-import { Pipe } from "../../pipe/pipe.type.js"
+import { PF } from "../../pipe/pipe.type.js"
 
-export function buffer(count = 1): Pipe {
+export function buffer(count = 1): PF {
   const values: any[] = []
   return ({ status, value }, next) => {
     if (status === "success") {

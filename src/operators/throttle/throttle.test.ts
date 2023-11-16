@@ -5,7 +5,7 @@ describe("throttle", () => {
   test("set gap number", () => {
     const mock = vi.useFakeTimers()
     const o = createObservable([throttle(1000)])
-    
+
     const sub = vi.fn()
     o.then(sub)
     ;[1, 2, 3].map(v => o.call(v))

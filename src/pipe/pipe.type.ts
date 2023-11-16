@@ -1,20 +1,28 @@
-export type PipeContextStatus = "success" | "fail" | "close"
+import { Func } from "../lib/type.js"
+
+export type PipeContextStatus = "success" | "error" | "close"
 export type PipeContext = {
   readonly status: PipeContextStatus
   readonly value: any
 }
 
+// 优先级，从上到下
 export type PipeNextOptions = {
+  forceClose?: boolean
   skip?: boolean
   loop?: boolean
-  forceClose?: boolean
 }
+export type PipeBuiltinContext<T = any> = { close: any; done: Func<[any], void>; raw: { type: PipeContextStatus; value: T } }
 export type PipeNext = (value?: any, options?: PipeNextOptions) => void
 
-export type Pipe = (context: PipeContext, next: PipeNext) => any
+export type PipeFactory = (context: PipeContext, next: PipeNext) => any
+export type PF = PipeFactory
 
-export interface PipeFactory {
-  (value?: any, type?: "fail"): void
+export interface Pipes<T = any> {
+  next: (value?: any) => Pipes<T>
+  error: (error?: any) => Pipes<T>
+  close: (value?: any) => Pipes<T>
   closed: () => boolean
-  close: (fn?: () => any) => void
+  value: () => T
+  resolve: () => Promise<T>
 }

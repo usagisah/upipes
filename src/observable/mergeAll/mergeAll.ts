@@ -1,9 +1,9 @@
 import { isNumber } from "../../lib/check.js"
-import { Pipe } from "../../pipe/pipe.type.js"
+import { PF } from "../../pipe/pipe.type.js"
 import { isObservable } from "../createObservable/isObservable.js"
 import { lazyObservable } from "../createObservable/lazyObservable.js"
 
-export function mergeAll<T = any>(pipes: Pipe[], values: any[], limit?: number) {
+export function mergeAll<T = any>(pipes: PF[], values: any[], limit?: number) {
   const _limit = isNumber(limit) && limit > 0 ? limit : 1
   const _values = [...values]
   return lazyObservable<T>(pipes, ob => {

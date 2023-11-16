@@ -1,7 +1,7 @@
 import { createObservable, map } from "../../index.js"
 import { isNumber, isPlainObject, isString } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
-import { Pipe } from "../../pipe/pipe.type.js"
+import { PF } from "../../pipe/pipe.type.js"
 
 type Config = {
   timeout?: number
@@ -9,9 +9,9 @@ type Config = {
   forceClose?: boolean
 }
 
-export function timeoutMap(fn: Func<[any]>, timeout?: number): Pipe
-export function timeoutMap(fn: Func<[any]>, config?: Config): Pipe
-export function timeoutMap(fn: Func<[any]>, timeoutOrConfig?: number | Config): Pipe {
+export function timeoutMap(fn: Func<[any]>, timeout?: number): PF
+export function timeoutMap(fn: Func<[any]>, config?: Config): PF
+export function timeoutMap(fn: Func<[any]>, timeoutOrConfig?: number | Config): PF {
   let _timeout = 10000
   let _throwError: string | null = null
   let _forceClose = false
@@ -25,7 +25,7 @@ export function timeoutMap(fn: Func<[any]>, timeoutOrConfig?: number | Config): 
 
   let _t: any = null
   return ({ status, value }, next) => {
-    if (status === "fail") throw value
+    if (status === "error") throw value
     if (status === "close") return next(value)
 
     const o = createObservable([map(fn)])

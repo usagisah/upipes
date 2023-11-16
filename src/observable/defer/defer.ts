@@ -1,8 +1,8 @@
 import { isNumber } from "../../lib/check.js"
-import { Pipe } from "../../pipe/pipe.type.js"
+import { PF } from "../../pipe/pipe.type.js"
 import { lazyObservable } from "../createObservable/lazyObservable.js"
 
-export function defer<T = any>(pipes: Pipe[], timeout = 0, value?: T) {
+export function defer<T = any>(pipes: PF[], timeout = 0, value?: T) {
   return lazyObservable<T | undefined>(pipes, ob => {
     setTimeout(
       () => {

@@ -1,8 +1,8 @@
 import { Func } from "../../lib/type.js"
-import { Pipe } from "../../pipe/pipe.type.js"
+import { PF } from "../../pipe/pipe.type.js"
 import { Observable, createObservable } from "./createObservable.js"
 
-export function lazyObservable<T = any>(pipes: Pipe[], subscriber: Func<[Observable<T>], any>): Observable<T> {
+export function lazyObservable<T = any>(pipes: PF[], subscriber: Func<[Observable<T>], any>): Observable<T> {
   const ob: any = createObservable<T>(pipes)
   const recover = proxyMethods(ob, (type, ...args) => {
     const values = recover()

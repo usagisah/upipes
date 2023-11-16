@@ -2,7 +2,16 @@
 
 异步流式处理器
 
+
+## found
+
+createPipes
+createEventPipes
+createObservable
+
+
 ## pipe
+
 
 ## observable
 
@@ -68,3 +77,5 @@ todo
   - 防抖，一定时间内，多次触发同一个事件，只执行最后一次操作
 - throttle
   - 节流，一定时间内，多次触发同一个事件，只执行第一次操作
+
+

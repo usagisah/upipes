@@ -1,11 +1,11 @@
 import { isFunction, isNumber } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
-import { Pipe, PipeContext } from "../../pipe/pipe.type.js"
+import { PF, PipeContext } from "../../pipe/pipe.type.js"
 
-export function retry(countOrCheck?: number | Func<[PipeContext], boolean>): Pipe {
+export function retry(countOrCheck?: number | Func<[PipeContext], boolean>): PF {
   let _max = 0
   let _count = 0
-  let _check: any = ({ status }: any) => status === "fail" && _count < _max
+  let _check: any = ({ status }: any) => status === "error" && _count < _max
   if (isNumber(countOrCheck)) _max = countOrCheck
   else if (isFunction(countOrCheck)) _check = countOrCheck
 

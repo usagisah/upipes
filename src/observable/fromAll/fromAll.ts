@@ -1,7 +1,7 @@
 import { isFunction, isPlainObject } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
 import { unWrapper } from "../../lib/unWrapper.js"
-import { Pipe } from "../../pipe/pipe.type.js"
+import { PF } from "../../pipe/pipe.type.js"
 import { Observable } from "../createObservable/createObservable.js"
 import { lazyObservable } from "../createObservable/lazyObservable.js"
 
@@ -9,7 +9,7 @@ type FromAllConfigs = {
   factory?: (options: { value: unknown; observable: Observable; done: Func; unWrapper: Func }) => any
 }
 
-export function fromAll<T = any>(pipes: Pipe[], values: any[], configs?: FromAllConfigs) {
+export function fromAll<T = any>(pipes: PF[], values: any[], configs?: FromAllConfigs) {
   return lazyObservable<T>(pipes, async ob => {
     if (!Array.isArray(values)) ob.close()
 

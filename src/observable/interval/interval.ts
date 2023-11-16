@@ -1,9 +1,9 @@
 import { isFunction, isNumber } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
-import { Pipe } from "../../pipe/pipe.type.js"
+import { PF } from "../../pipe/pipe.type.js"
 import { lazyObservable } from "../createObservable/lazyObservable.js"
 
-export function interval<T = number>(pipes: Pipe[], timer: number, value?: T | Func<[number], T>) {
+export function interval<T = number>(pipes: PF[], timer: number, value?: T | Func<[number], T>) {
   return lazyObservable<T>(pipes, ob => {
     if (!isNumber(timer)) ob.close()
 

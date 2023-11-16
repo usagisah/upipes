@@ -1,7 +1,7 @@
 import { isFunction, isPlainObject } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
-import { definePipes } from "../../pipe/pipe.js"
-import { Pipe, PipeContextStatus } from "../../pipe/pipe.type.js"
+import { createPipes } from "../../pipe/pipe.js"
+import { PF, PipeContextStatus } from "../../pipe/pipe.type.js"
 
 const emptyFunc = () => null
 
@@ -21,20 +21,20 @@ export type SubscribeConfigs = {
   once?: boolean
 }
 
-export function createObservable<T = any>(pipes?: Pipe[]): Observable<T> {
+export function createObservable<T = any>(pipes?: PF[]): Observable<T> {
   const subscriber: Record<PipeContextStatus, LinkedList> = {
     success: new LinkedList(),
-    fail: new LinkedList(),
+    error: new LinkedList(),
     close: new LinkedList()
   }
 
   let entered = 0
   const emit = new Emit()
-  const pf = definePipes([
+  const pf = createPipes([
     ...(Array.isArray(pipes) ? pipes : []),
     function subPipe({ status, value }) {
       const list = subscriber[status]
-      if (list.size === 0 && status === "fail") throw value
+      if (list.size === 0 && status === "error") throw value
 
       entered--
       emit.call(value)
@@ -77,7 +77,7 @@ export function createObservable<T = any>(pipes?: Pipe[]): Observable<T> {
       return subscribe("success", fn, config)
     },
     catch: function catchError(fn: Func<[any], void>, config?: SubscribeConfigs): Func {
-      return subscribe("fail", fn, config)
+      return subscribe("error", fn, config)
     },
     finalize: function finalize(fn: Func<[void], void>): Func {
       return subscribe("close", fn)

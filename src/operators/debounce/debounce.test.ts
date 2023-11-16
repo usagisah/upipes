@@ -1,11 +1,11 @@
-import { setTimeout } from "timers/promises";
+import { setTimeout } from "timers/promises"
 import { createObservable } from "../../index.js"
 import { debounce } from "./debounce.js"
 
 describe("debounce", () => {
   test("direct", async () => {
     const o = createObservable([debounce()])
-    
+
     const sub = vi.fn()
     o.then(sub)
     ;[1, 2, 3].map(v => o.call(v))
@@ -18,7 +18,7 @@ describe("debounce", () => {
   test("set gap number", () => {
     const mock = vi.useFakeTimers()
     const o = createObservable([debounce(1000)])
-    
+
     const sub = vi.fn()
     o.then(sub)
     ;[1, 2, 3].map(v => o.call(v))
