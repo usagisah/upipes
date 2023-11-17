@@ -1,6 +1,6 @@
 import { setTimeout } from "timers/promises"
-import { createObservable } from "../../index.js"
-import { silentConsoleError } from "../../lib/test.js"
+import { testConsoleError } from "../../lib/test.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { timeoutMap } from "./timeoutMap.js"
 
 describe("timeoutMap -- default params", () => {
@@ -11,13 +11,12 @@ describe("timeoutMap -- default params", () => {
       await setTimeout(6000)
       return v
     })
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const [err, errRestore] = testConsoleError(vi.fn())
 
     const o = createObservable([timeoutMap(f)])
     const sub = vi.fn()
-    o.then(sub)
-    o.call(1)
+    o.subscribe(sub)
+    o.next(1)
 
     expect(f).toBeCalled()
     expect(f).toBeCalledWith(1)
@@ -37,13 +36,12 @@ describe("timeoutMap -- default params", () => {
     vi.useFakeTimers()
 
     const f = vi.fn(v => v)
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const [err, errRestore] = testConsoleError(vi.fn())
 
     const o = createObservable([timeoutMap(f)])
     const sub = vi.fn()
-    o.then(sub)
-    o.call(1)
+    o.subscribe(sub)
+    o.next(1)
 
     await vi.advanceTimersByTimeAsync(6000)
     expect(sub).toHaveBeenCalledOnce()

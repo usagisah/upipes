@@ -1,4 +1,4 @@
-import { PF, PipeContext, PipeNext } from "../index.js"
+import { PF, PipeContext, PipeNext } from "../pipe/pipe.type.js"
 import { Func } from "./type.js"
 
 export function nextSuccess(_value?: any): PF {
@@ -41,4 +41,8 @@ export function silentConsoleError(fn: any = () => null) {
   return function restore() {
     console.error = origin
   }
+}
+
+export function testConsoleError(err = vi.fn()) {
+  return [err, silentConsoleError(err)]
 }

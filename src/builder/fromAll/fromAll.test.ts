@@ -14,7 +14,7 @@ describe("fromAll", () => {
     const o = fromAll([], [v1, v2, v3, v4, v5, v6, v7])
 
     const sub = vi.fn()
-    o.then(sub)
+    o.subscribe(sub)
     await setTimeout(10)
     o.close()
 
@@ -31,12 +31,12 @@ describe("fromAll", () => {
   test("custom unWrapper", () => {
     const o = fromAll([], [new Set([3, 3]), 4], {
       factory({ value, observable, done, unWrapper }) {
-        if (value instanceof Set) value.forEach(observable.call), done()
+        if (value instanceof Set) value.forEach(observable.next), done()
         else unWrapper()
       }
     })
     const sub = vi.fn()
-    o.then(sub)
+    o.subscribe(sub)
 
     expect(sub).toHaveBeenNthCalledWith(1, 3)
     expect(sub).toHaveBeenNthCalledWith(2, 4)
@@ -54,7 +54,7 @@ describe("fromAll", () => {
     })
 
     const sub = vi.fn()
-    o.then(sub)
+    o.subscribe(sub)
     o.close()
     expect(sub).toBeCalledTimes(1)
     expect(sub).toHaveBeenLastCalledWith(1)

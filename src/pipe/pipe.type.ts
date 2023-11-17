@@ -19,10 +19,11 @@ export type PipeFactory = (context: PipeContext, next: PipeNext) => any
 export type PF = PipeFactory
 
 export interface Pipes<T = any> {
-  next: (value?: any) => Pipes<T>
+  next: (value?: T) => Pipes<T>
   error: (error?: any) => Pipes<T>
-  close: (value?: any) => Pipes<T>
+  close: (value?: T) => Pipes<T>
   closed: () => boolean
   value: () => T
   resolve: () => Promise<T>
+  readonly __upipes_pipes__: boolean
 }

@@ -1,10 +1,10 @@
 import { isFunction, isNumber } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { PF } from "../../pipe/pipe.type.js"
-import { lazyObservable } from "../createObservable/lazyObservable.js"
 
 export function interval<T = number>(pipes: PF[], timer: number, value?: T | Func<[number], T>) {
-  return lazyObservable<T>(pipes, ob => {
+  return createObservable<T>(pipes, ob => {
     if (!isNumber(timer)) ob.close()
 
     let count = 0
@@ -12,10 +12,10 @@ export function interval<T = number>(pipes: PF[], timer: number, value?: T | Fun
     const t: any = setInterval(() => {
       try {
         if (ob.closed()) return clearInterval(t)
-        ob.call(f(count))
+        ob.next(f(count))
         count++
       } catch (e) {
-        console.error(e)
+        ob.error(e)
       }
     }, timer)
   })

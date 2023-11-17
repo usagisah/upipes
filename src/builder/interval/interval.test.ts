@@ -4,14 +4,14 @@ describe("interval", () => {
   test("base with default value", () => {
     vi.useFakeTimers()
     const sub = vi.fn()
-    const ob = interval([], 10)
-    ob.then(sub)
-    vi.advanceTimersByTime(20)
+    const ob = interval([], 100)
+    ob.subscribe(sub)
+    vi.advanceTimersByTime(200)
     ob.close()
 
     expect(sub).toHaveBeenNthCalledWith(1, 0)
     expect(sub).toHaveBeenNthCalledWith(2, 1)
-    vi.restoreAllMocks()
+    expect(ob.closed()).toBeTruthy()
   })
 
   test("custom value", () => {
@@ -19,13 +19,12 @@ describe("interval", () => {
     const sub = vi.fn()
     const value = "interval"
     const ob = interval([], 1000, value)
-    ob.then(sub)
+    ob.subscribe(sub)
     vi.advanceTimersByTime(2000)
     ob.close()
 
     expect(sub).toHaveBeenNthCalledWith(1, value)
     expect(sub).toHaveBeenNthCalledWith(2, value)
-    vi.restoreAllMocks()
   })
 
   test("function value", () => {
@@ -35,7 +34,7 @@ describe("interval", () => {
     const ob = interval([], 1000, fParam)
 
     const sub = vi.fn()
-    ob.then(sub)
+    ob.subscribe(sub)
     vi.advanceTimersByTime(2000)
     ob.close()
 
@@ -44,7 +43,5 @@ describe("interval", () => {
 
     expect(sub).toHaveBeenNthCalledWith(1, value)
     expect(sub).toHaveBeenNthCalledWith(2, value)
-
-    vi.restoreAllMocks()
   })
 })

@@ -1,5 +1,6 @@
 import { Func } from "../lib/type.js"
 import { callCloseNext } from "./closeNext.js"
+import { CLOSE_ERROR } from "./constants.js"
 import { PF, PipeContextStatus, Pipes } from "./pipe.type.js"
 import { createPipeNext } from "./pipeNext.js"
 import { createPipeNodes } from "./pipeNode.js"
@@ -7,6 +8,7 @@ import { createPipeNodes } from "./pipeNode.js"
 export * from "./pipe.type.js"
 
 export function createPipes<T = any>(pfs: PF[]): Pipes {
+  if (!Array.isArray(pfs)) throw "createPipes.params[0] 管道节点参数必须是一个数组"
   const node = createPipeNodes(pfs)
 
   let pipeValue: T | undefined = undefined
@@ -24,7 +26,7 @@ export function createPipes<T = any>(pfs: PF[]): Pipes {
   }
 
   function callPipeNext(type: PipeContextStatus, value?: any) {
-    if (node.closed) return console.error("the pipe has been closed")
+    if (node.closed) return console.error(CLOSE_ERROR)
     createPipeNext(node, { close, done, raw: { type, value } })(type, value)
   }
 
@@ -47,6 +49,9 @@ export function createPipes<T = any>(pfs: PF[]): Pipes {
     },
     value() {
       return pipeValue
+    },
+    get __upipes_pipes__() {
+      return true
     }
   }
 

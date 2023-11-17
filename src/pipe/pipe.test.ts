@@ -1,4 +1,4 @@
-import { applyError, applySuccess, nextError, nextSuccess, silentConsoleError } from "../lib/test.js"
+import { applyError, applySuccess, nextError, nextSuccess, silentConsoleError, testConsoleError } from "../lib/test.js"
 import { PF, createPipes } from "./pipe.js"
 
 describe("success", () => {
@@ -36,8 +36,7 @@ describe("success", () => {
 
 describe("error", () => {
   test("once", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const [err, errRestore] = testConsoleError(vi.fn())
     const pipes = createPipes([])
 
     pipes.error(99)
@@ -48,8 +47,7 @@ describe("error", () => {
   })
 
   test("透传 error", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const [err, errRestore] = testConsoleError(vi.fn())
 
     const pf = vi.fn()
     const pipes = createPipes([applyError(pf), applyError(pf)])
@@ -63,8 +61,7 @@ describe("error", () => {
   })
 
   test("get value", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const errRestore = silentConsoleError()
     const pipes = createPipes([])
 
     pipes.error(99)
@@ -74,8 +71,7 @@ describe("error", () => {
   })
 
   test("resolve value", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const errRestore = silentConsoleError()
     const pipes = createPipes([])
 
     expect(pipes.resolve()).resolves.toBe(99)
@@ -95,8 +91,7 @@ describe("关闭", () => {
   })
 
   test("禁止相关api调用", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const [err, errRestore] = testConsoleError(vi.fn())
     const pipes = createPipes([])
 
     pipes.close()
@@ -108,8 +103,7 @@ describe("关闭", () => {
   })
 
   test("最终值全是 undefined", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const errRestore = silentConsoleError()
 
     const pipes = createPipes([])
     expect(pipes.resolve()).resolves.toBe(1)
@@ -178,8 +172,7 @@ describe("关闭", () => {
 
 describe("混合操作", () => {
   test("pipe-status success -> error", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const [err, errRestore] = testConsoleError(vi.fn())
 
     createPipes([nextError(99)]).next(1)
     expect(err).toBeCalled()
@@ -188,8 +181,7 @@ describe("混合操作", () => {
   })
 
   test("pipe-status error -> success", () => {
-    const err = vi.fn()
-    const errRestore = silentConsoleError(err)
+    const [err, errRestore] = testConsoleError(vi.fn())
 
     createPipes([nextSuccess(99)]).error(1)
     expect(err).not.toBeCalled()
