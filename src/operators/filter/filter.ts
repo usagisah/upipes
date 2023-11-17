@@ -6,8 +6,7 @@ import { empty } from "../empty.js"
 export function filter(fn: Func<[any], boolean>): PF {
   if (!isFunction(fn)) return empty
   return ({ status, value }, next) => {
+    if (status === "success") return fn(value) && next(value)
     if (status === "error") throw value
-    if (status === "close") return next(value)
-    if (fn(value)) next(value)
   }
 }

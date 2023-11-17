@@ -1,4 +1,4 @@
-import { createObservable } from "../../index.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { mergeMap } from "./mergeMap.js"
 
 describe("mergeMap", () => {
@@ -15,9 +15,8 @@ describe("mergeMap", () => {
     ])
 
     const sub = vi.fn()
-    o.then(sub)
-    o.call(2)
-    o.call(1)
+    o.subscribe(sub)
+    o.next(2).next(1)
 
     await vi.advanceTimersByTimeAsync(2000)
     expect(sub).toHaveBeenNthCalledWith(1, 2)
@@ -41,9 +40,8 @@ describe("mergeMap", () => {
     ])
 
     const sub = vi.fn()
-    o.then(sub)
-    o.call(2)
-    o.call(1)
+    o.subscribe(sub)
+    o.next(2).next(1)
 
     await vi.advanceTimersByTimeAsync(2000)
     expect(sub).toHaveBeenNthCalledWith(1, 1)

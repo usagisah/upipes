@@ -1,4 +1,4 @@
-import { of } from "../../index.js"
+import { of } from "../../builder/of/of.js"
 import { silentConsoleError } from "../../lib/test.js"
 import { take } from "./take.js"
 
@@ -7,7 +7,7 @@ describe("take", () => {
     const errRestore = silentConsoleError()
     const o = of([take(1)], 1, 2, 3)
     const sub = vi.fn()
-    o.then(sub)
+    o.subscribe(sub)
 
     expect(sub).toHaveBeenCalledOnce()
     expect(sub).toBeCalledWith(1)

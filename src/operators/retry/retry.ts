@@ -11,7 +11,7 @@ export function retry(countOrCheck?: number | Func<[PipeContext], boolean>): PF 
 
   return (ctx, next) => {
     const { status, value } = ctx
-    if (status === "close") return next()
+    if (status === "close") return
 
     try {
       if (_check(ctx)) {

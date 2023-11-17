@@ -11,11 +11,13 @@ export type ProxyListener<T> = T & {
 export function createListener<T = any, R = any>(pfs: PF[], fn?: (...args: T[]) => R): [(...args: T[]) => Promise<R>, Pipes] {
   const _pfs = [...pfs]
   if (isFunction(fn)) _pfs.push(map(fn))
-  const pipes = createPipes(pfs)
+  const pipes = createPipes(_pfs)
 
   async function proxyMethod() {
     try {
-      return pipes.next(arguments.length > 0 ? arguments : arguments[0]).resolve()
+      const res = pipes.resolve()
+      pipes.next(arguments.length === 1 ? arguments[0] : arguments)
+      return res
     } catch (e) {
       pipes.error(e)
     }

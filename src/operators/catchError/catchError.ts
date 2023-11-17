@@ -4,9 +4,11 @@ import { PF } from "../../pipe/pipe.type.js"
 
 export function catchError(fn: Func<[any]>): PF {
   return async ({ status, value }, next) => {
-    if (status === "success" || status === "close") return next(value)
-    let res = fn(value)
-    if (isPromise(res)) res = await res
-    next(res)
+    if (status === "error") {
+      let res = fn(value)
+      if (isPromise(res)) res = await res
+      return next(res)
+    }
+    next(value)
   }
 }

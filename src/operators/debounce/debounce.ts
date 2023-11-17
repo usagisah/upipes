@@ -11,7 +11,7 @@ export function debounce(fnOrGap?: Func<[any], number> | number): PF {
   let t: any
   return ({ status, value }, next) => {
     if (status === "error") throw value
-    if (status === "close") return next()
+    if (status === "close") return
 
     clearTimeout(t)
     t = null

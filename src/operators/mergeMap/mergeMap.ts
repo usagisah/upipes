@@ -1,6 +1,6 @@
 import { isFunction, isNumber } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
-import { createObservable } from "../../observable/createObservable/createObservable.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { PF, PipeNext } from "../../pipe/pipe.type.js"
 import { map } from "../map/map.js"
 
@@ -18,22 +18,24 @@ export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], bo
     if (++parallel > max) return parallel--
 
     const o = createObservable([map(thenFn)])
-    o.catch(e => {
-      try {
+    o.subscribe({
+      next: value => {
         o.close()
+        next(value)
         parallel--
-        throw e
-      } finally {
         tryNext(next)
+      },
+      error: e => {
+        try {
+          o.close()
+          parallel--
+          throw e
+        } finally {
+          tryNext(next)
+        }
       }
     })
-    o.then(value => {
-      o.close()
-      next(value)
-      parallel--
-      tryNext(next)
-    })
-    o.call(pending.shift())
+    o.next(pending.shift())
     tryNext(next)
   }
 

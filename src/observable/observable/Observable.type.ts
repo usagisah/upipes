@@ -20,5 +20,8 @@ export interface Observable<T = any> extends Pipes<T> {
     <T = any>(next: Func<[T], any>, config?: SubscribeConfigs | undefined): UnSubscribe
     <T = any>(subscribeOperates: SubscribeOperates<T>, config?: SubscribeConfigs | undefined): UnSubscribe
   }
+  next: (value?: T) => Observable<T>
+  error: (error?: any) => Observable<T>
+  close: (value?: T) => Observable<T>
   readonly __upipes_Observable__: boolean
 }

@@ -1,7 +1,8 @@
-import { createObservable, map } from "../../index.js"
 import { isNumber, isPlainObject, isString } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { PF } from "../../pipe/pipe.type.js"
+import { map } from "../map/map.js"
 
 type Config = {
   timeout?: number
@@ -26,19 +27,21 @@ export function timeoutMap(fn: Func<[any]>, timeoutOrConfig?: number | Config): 
   let _t: any = null
   return ({ status, value }, next) => {
     if (status === "error") throw value
-    if (status === "close") return next(value)
+    if (status === "close") return
 
     const o = createObservable([map(fn)])
-    o.then(next)
-    o.catch(e => {
-      o.close()
-      console.error(e)
+    o.subscribe({
+      next,
+      error: e => {
+        o.close()
+        console.error(e)
+      },
+      close: () => {
+        clearTimeout(_t)
+        _t = null
+      }
     })
-    o.finalize(() => {
-      clearTimeout(_t)
-      _t = null
-    })
-    o.call(value)
+    o.next(value)
 
     _t = setTimeout(() => {
       try {

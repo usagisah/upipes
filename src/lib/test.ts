@@ -14,7 +14,7 @@ export function nextError(_value?: any): PF {
   }
 }
 
-export function applySuccess(fn: Func) {
+export function applySuccess(fn: Func = () => null) {
   return (ctx: PipeContext, next: PipeNext) => {
     const { status, value } = ctx
     if (status === "error") throw value
@@ -24,7 +24,7 @@ export function applySuccess(fn: Func) {
   }
 }
 
-export function applyError(fn: Func) {
+export function applyError(fn: Func = () => null) {
   return (ctx: PipeContext, next: PipeNext) => {
     const { status, value } = ctx
     if (status === "error") {

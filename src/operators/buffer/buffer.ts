@@ -6,12 +6,16 @@ export function buffer(count = 1): PF {
     if (status === "success") {
       values.push(value)
       if (values.length === count) {
-        const _values = [...values]
+        next([...values])
         values.length = 0
-        next(_values)
       }
-    } else if (status === "close") {
-      next(values)
+      return
+    }
+
+    if (status === "close") {
+      if (value !== undefined) values.push(value)
+      next([...values])
+      values.length = 0
     }
   }
 }

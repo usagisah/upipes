@@ -6,11 +6,7 @@ import { empty } from "../empty.js"
 export function tap(fn: Func<[PipeContext]>): PF {
   if (!isFunction(fn)) return empty
   return (ctx, next) => {
-    try {
-      fn(ctx)
-    } catch (e) {
-      console.error(e)
-    }
+    fn(ctx)
     empty(ctx, next)
   }
 }

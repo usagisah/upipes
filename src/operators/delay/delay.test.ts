@@ -1,4 +1,4 @@
-import { createObservable } from "../../index.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { delay } from "./delay.js"
 
 describe("delay", () => {
@@ -6,9 +6,9 @@ describe("delay", () => {
     vi.useFakeTimers()
     const o = createObservable([delay(1000)])
     const sub = vi.fn()
-    o.then(sub)
+    o.subscribe(sub)
 
-    o.call("a")
+    o.next("a")
     expect(sub).toBeCalledTimes(0)
 
     await vi.advanceTimersByTimeAsync(1000)
@@ -21,8 +21,8 @@ describe("delay", () => {
     let first = true
     const o = createObservable([delay(() => (first ? ((first = false), 1000) : 2000))])
     const sub = vi.fn()
-    o.then(sub)
-    ;["a", "b"].map(v => o.call(v))
+    o.subscribe(sub)
+    ;["a", "b"].map(o.next)
     expect(sub).toBeCalledTimes(0)
 
     await vi.advanceTimersByTimeAsync(1000)

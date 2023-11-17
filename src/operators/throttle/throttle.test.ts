@@ -1,4 +1,4 @@
-import { createObservable } from "../../index.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { throttle } from "./throttle.js"
 
 describe("throttle", () => {
@@ -7,8 +7,8 @@ describe("throttle", () => {
     const o = createObservable([throttle(1000)])
 
     const sub = vi.fn()
-    o.then(sub)
-    ;[1, 2, 3].map(v => o.call(v))
+    o.subscribe(sub)
+    ;[1, 2, 3].map(o.next)
 
     mock.advanceTimersByTime(1500)
     expect(sub).toHaveBeenCalledOnce()
@@ -20,8 +20,8 @@ describe("throttle", () => {
     const o = createObservable([throttle(v => 1000)])
 
     const sub = vi.fn()
-    o.then(sub)
-    ;[1, 2, 3].map(v => o.call(v))
+    o.subscribe(sub)
+    ;[1, 2, 3].map(o.next)
 
     mock.advanceTimersByTime(1500)
     expect(sub).toHaveBeenCalledOnce()

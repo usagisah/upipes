@@ -10,13 +10,14 @@ export function throttle(fnOrGap?: Func<[any], number> | number): PF {
 
   let active: any = null
   return ({ status, value }, next) => {
-    if (status === "error") throw value
     if (active) return
-    if (status === "close") return next()
-
-    active = setTimeout(() => {
-      active = null
-      next(value)
-    }, getTimeout(value))
+    if (status === "success") {
+      active = setTimeout(() => {
+        active = null
+        next(value)
+      }, getTimeout(value))
+      return
+    }
+    if (status === "error") throw value
   }
 }

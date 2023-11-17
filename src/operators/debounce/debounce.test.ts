@@ -1,5 +1,5 @@
 import { setTimeout } from "timers/promises"
-import { createObservable } from "../../index.js"
+import { createObservable } from "../../observable/observable/createObservable.js"
 import { debounce } from "./debounce.js"
 
 describe("debounce", () => {
@@ -7,8 +7,8 @@ describe("debounce", () => {
     const o = createObservable([debounce()])
 
     const sub = vi.fn()
-    o.then(sub)
-    ;[1, 2, 3].map(v => o.call(v))
+    o.subscribe(sub)
+    ;[1, 2, 3].map(o.next)
 
     await setTimeout(0)
     expect(sub).toHaveBeenCalledOnce()
@@ -20,8 +20,8 @@ describe("debounce", () => {
     const o = createObservable([debounce(1000)])
 
     const sub = vi.fn()
-    o.then(sub)
-    ;[1, 2, 3].map(v => o.call(v))
+    o.subscribe(sub)
+    ;[1, 2, 3].map(o.next)
 
     mock.advanceTimersByTime(1500)
     expect(sub).toHaveBeenCalledOnce()
@@ -33,8 +33,8 @@ describe("debounce", () => {
     const o = createObservable([debounce(v => 1000)])
 
     const sub = vi.fn()
-    o.then(sub)
-    ;[1, 2, 3].map(v => o.call(v))
+    o.subscribe(sub)
+    ;[1, 2, 3].map(o.next)
 
     mock.advanceTimersByTime(1500)
     expect(sub).toHaveBeenCalledOnce()

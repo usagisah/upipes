@@ -6,14 +6,10 @@ import { empty } from "../empty.js"
 export function map(fn: Func<[any]>): PF {
   if (!isFunction(fn)) return empty
   return ({ status, value }, next) => {
+    if (status === "success") {
+      const res = fn(value)
+      return isPromise(res) ? res.then(next) : next(res)
+    }
     if (status === "error") throw value
-    if (status === "close") return next(value)
-
-    const res = fn(value)
-    if (isPromise(res))
-      res.then(r => {
-        next(r)
-      })
-    else next(res)
   }
 }
