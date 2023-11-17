@@ -5,7 +5,9 @@ import { tap } from "./tap.js"
 test("tap", () => {
   const p2 = vi.fn(() => 100)
   const p3 = vi.fn()
-  createObservable([tap(p2), applySuccess(p3)]).next(1).subscribe(() => {})
+  createObservable([tap(p2), applySuccess(p3)])
+    .next(1)
+    .subscribe(() => {})
 
   expect(p2).toBeCalledWith({ status: "success", value: 1 })
   expect(p3).toBeCalledWith(1)
