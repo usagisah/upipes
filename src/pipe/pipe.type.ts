@@ -12,11 +12,15 @@ export type PipeNextOptions = {
   skip?: boolean
   loop?: boolean
 }
-export type PipeBuiltinContext<T = any> = { close: any; done: Func<[any], void>; raw: { type: PipeContextStatus; value: T } }
+export type PipeBuiltinContext<T = any> = { throwError: boolean; close: any; done: Func<[any], void>; raw: { type: PipeContextStatus; value: T } }
 export type PipeNext = (value?: any, options?: PipeNextOptions) => void
 
 export type PipeFactory = (context: PipeContext, next: PipeNext) => any
 export type PF = PipeFactory
+
+export type PipeConfigs = {
+  throwError?: boolean
+}
 
 export interface Pipes<T = any> {
   next: (value?: T) => Pipes<T>

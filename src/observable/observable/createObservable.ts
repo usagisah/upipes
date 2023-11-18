@@ -1,36 +1,45 @@
 import { isFunction, isPlainObject } from "../../lib/check.js"
 import { CLOSE_ERROR } from "../../pipe/constants.js"
 import { createPipes } from "../../pipe/pipe.js"
-import { PF } from "../../pipe/pipe.type.js"
+import { PF, PipeConfigs } from "../../pipe/pipe.type.js"
 import { LinkedList } from "./LinkedList.js"
 import { Observable, SubscribeConfigs, SubscribeNext, SubscribeOperates, SubscriberTypes, UnSubscribe } from "./Observable.type.js"
 import { CashEmitter, EmitTypes } from "./cashEmitter.js"
 
-export function createObservable<T = any>(pfs: PF[], provider?: (o: Observable<T>) => any): Observable<T> {
+export function createObservable<T = any>(pfs: PF[], provider?: ((o: Observable<T>) => any) | null, configs?: PipeConfigs): Observable<T> {
   const subscribers: Record<SubscriberTypes, LinkedList> = { next: new LinkedList(), error: new LinkedList(), close: new LinkedList() }
-  const pipes = createPipes([
-    ...(pfs ?? []),
-    function pipeDispatchSubscriber({ status, value }, next) {
-      const type = status === "success" ? "next" : status
-      const list = subscribers[type]
-      if (status === "error" && list.size === 0) throw value
-      list.call(value)
-      next(value)
-      if (status === "close") {
-        for (const type in subscribers) subscribers[type as SubscriberTypes].clear()
-        emitter.clear()
+  const pipes = createPipes(
+    [
+      ...(pfs ?? []),
+      function pipeDispatchSubscriber({ status, value }, next) {
+        const type = status === "success" ? "next" : status
+        const list = subscribers[type]
+        if (status === "error" && list.size === 0) throw value
+        if (!pipes.closed()) list.call(value)
+        next(value)
+
+        if (status === "close") {
+          list.call(value)
+          for (const type in subscribers) subscribers[type as SubscriberTypes].clear()
+          emitter.clear()
+          pendingResolveSize = 0
+        }
       }
-    }
-  ])
-  const { next, error, closed } = pipes
-  const originMethods = { next, error } as const
+    ],
+    configs
+  )
+  const { next, error, resolve, closed } = pipes
+  const originMethods = { next, error, resolve } as const
   const emitter = new CashEmitter(originMethods)
   pipes.next = proxyMethod.bind(null, "next")
   pipes.error = proxyMethod.bind(null, "error")
 
+  let pendingResolveSize = 0
+  pipes.resolve = () => (pendingResolveSize++, originMethods.resolve())
+
   function proxyMethod(type: EmitTypes, value: any) {
     if (closed()) return console.error(CLOSE_ERROR), pipes
-    if (subscribers[type].size > 0) return originMethods[type](value)
+    if (subscribers[type].size > 0 || pendingResolveSize > 0) return originMethods[type](value)
     emitter.add({ type, value })
     return pipes
   }

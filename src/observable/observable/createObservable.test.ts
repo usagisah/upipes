@@ -1,4 +1,5 @@
 import { nextSuccess, testConsoleError } from "../../lib/test.js"
+import { PF } from "../../pipe.js"
 import { createObservable } from "./createObservable.js"
 
 describe("single param", () => {
@@ -150,5 +151,22 @@ describe("observable", () => {
 
     expect(o.resolve()).resolves.toBeUndefined()
     o.close()
+  })
+
+  test("after closed, can't subscribe to be called", async () => {
+    const [err, errRestore] = testConsoleError(vi.fn())
+    const pf1: PF = ({ status }, next) => {
+      if (status === "success") return Promise.resolve().then(next)
+    }
+    const o = createObservable([pf1])
+    const sub = vi.fn()
+    o.subscribe(sub)
+
+    o.next(1).close()
+    expect(sub).not.toBeCalled()
+
+    await Promise.resolve()
+    expect(err).toHaveBeenCalledOnce()
+    errRestore()
   })
 })

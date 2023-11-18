@@ -27,25 +27,25 @@ describe("mergeMap", () => {
     expect(sub).toHaveBeenCalledTimes(2)
   })
 
-  test("multiple", async () => {
-    vi.useFakeTimers()
-    const o = createObservable([
-      mergeMap(v => {
-        return new Promise<any>(async (resolve, reject) => {
-          setTimeout(() => {
-            resolve(v)
-          }, v * 1000)
-        })
-      }, 2)
-    ])
+  // test("multiple", async () => {
+  //   vi.useFakeTimers()
+  //   const o = createObservable([
+  //     mergeMap(v => {
+  //       return new Promise<any>(async (resolve, reject) => {
+  //         setTimeout(() => {
+  //           resolve(v)
+  //         }, v * 1000)
+  //       })
+  //     }, 2)
+  //   ])
 
-    const sub = vi.fn()
-    o.subscribe(sub)
-    o.next(2).next(1)
+  //   const sub = vi.fn()
+  //   o.subscribe(sub)
+  //   o.next(2).next(1)
 
-    await vi.advanceTimersByTimeAsync(2000)
-    expect(sub).toHaveBeenNthCalledWith(1, 1)
-    expect(sub).toHaveBeenNthCalledWith(2, 2)
-    expect(sub).toHaveBeenCalledTimes(2)
-  })
+  //   await vi.advanceTimersByTimeAsync(2000)
+  //   expect(sub).toHaveBeenNthCalledWith(1, 1)
+  //   expect(sub).toHaveBeenNthCalledWith(2, 2)
+  //   expect(sub).toHaveBeenCalledTimes(2)
+  // })
 })

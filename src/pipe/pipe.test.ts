@@ -192,11 +192,11 @@ describe("混合操作", () => {
 
 describe("next 特殊属性", () => {
   test("skip", () => {
-    const pf = vi.fn()
-    createPipes([(_, next) => next(null, { skip: true }), pf])
-      .next(1)
-      .error(2)
-    expect(pf).not.toBeCalled()
+    const pf1: PF = ({ value }, next) => next(value, { skip: true })
+    const pf2 = vi.fn()
+    const p = createPipes([pf1, pf2]).next(1).error(2)
+    expect(pf2).not.toBeCalled()
+    expect(p.value()).toBe(2)
   })
 
   test("loop", () => {
@@ -216,19 +216,23 @@ describe("next 特殊属性", () => {
   })
 
   test("forceClose", () => {
+    const [err, errRestore] = testConsoleError(vi.fn())
     const pf = vi.fn()
     const pipes = createPipes([(_, next) => next(null, { forceClose: true }), pf])
     pipes.next(1).error(2)
+
     expect(pf).toHaveBeenCalledOnce()
     expect(pipes.closed()).toBeTruthy()
+    expect(err).toBeCalled()
+    errRestore()
   })
 })
 
-describe("other operate", () => {
+describe("other", () => {
   test("call multiple next", () => {
+    vi.useFakeTimers()
     const err = vi.fn()
     const errRestore = silentConsoleError()
-    vi.useFakeTimers()
 
     const pf = vi.fn()
     const pipes = createPipes([
@@ -258,5 +262,10 @@ describe("other operate", () => {
     innerNext()
 
     expect(pf).toHaveBeenCalledTimes(3)
+  })
+
+  test("set config throwError", () => {
+    const p = createPipes([], { throwError: true })
+    expect(() => p.error("99")).toThrow("99")
   })
 })

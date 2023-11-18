@@ -13,30 +13,20 @@ export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], bo
 
   let close = false
   let pending: any[] = []
-  function tryNext(next: PipeNext) {
+  function tryNext(mainNext: PipeNext) {
     if (close || pending.length === 0) return
     if (++parallel > max) return parallel--
 
-    const o = createObservable([map(thenFn)])
-    o.subscribe({
-      next: value => {
-        o.close()
-        next(value)
+    const o = createObservable([map(thenFn)], null, { throwError: true })
+    o.resolve()
+      .then(mainNext)
+      .finally(() => {
         parallel--
-        tryNext(next)
-      },
-      error: e => {
-        try {
-          o.close()
-          parallel--
-          throw e
-        } finally {
-          tryNext(next)
-        }
-      }
-    })
+        o.close()
+        tryNext(mainNext)
+      })
     o.next(pending.shift())
-    tryNext(next)
+    tryNext(mainNext)
   }
 
   return (ctx, next) => {

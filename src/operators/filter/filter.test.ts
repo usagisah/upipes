@@ -1,22 +1,29 @@
-import { of } from "../../builder/of/of.js"
-import { nextError } from "../../lib/test.js"
+import { applySuccess, silentConsoleError } from "../../lib/test.js"
+import { createPipes } from "../../pipe.js"
 import { filter } from "./filter.js"
 
 describe("filter", () => {
   test("filter value", () => {
-    const o = of([filter(v => v > 2)], 1, 2, 3)
-    const sub = vi.fn()
-    o.subscribe(sub)
+    const pf2 = vi.fn()
+    createPipes([filter(v => v > 2), applySuccess(pf2)])
+      .next(1)
+      .next(3)
 
-    expect(sub).toHaveBeenCalledOnce()
-    expect(sub).toHaveBeenCalledWith(3)
+    expect(pf2).toHaveBeenCalledOnce()
+    expect(pf2).toHaveBeenCalledWith(3)
   })
 
   test("only apply success", () => {
+    const errRestore = silentConsoleError()
+
     const p = vi.fn(v => v > 2)
-    const o = of([nextError(99), filter(p)], 1, 2, 3)
-    o.subscribe({ error: () => null })
+    createPipes([filter(p)]).error(99)
+    createPipes([filter(p)])
+      .close()
+      .next(1)
 
     expect(p).not.toBeCalled()
+
+    errRestore()
   })
 })
