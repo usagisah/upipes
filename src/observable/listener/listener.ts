@@ -1,5 +1,5 @@
-import { isFunction } from "../../lib/check.js"
-import { map } from "../../operators/map/map.js"
+import { isFunction, isPromise } from "../../lib/check.js"
+import { Func } from "../../lib/type.js"
 import { createPipes } from "../../pipe/pipe.js"
 import { PF, Pipes } from "../../pipe/pipe.type.js"
 
@@ -8,9 +8,20 @@ export type ProxyListener<T> = T & {
   readonly __upipes_Listener__: boolean
 }
 
-export function createListener<T = any, R = any>(pfs: PF[], fn?: (...args: T[]) => R): [(...args: T[]) => Promise<R>, Pipes] {
+const nextValue = (v1: unknown, v2: unknown) => (v1 === undefined ? v2 : v1)
+export function listenerCallback(fn: Func): PF {
+  return async (ctx, next) => {
+    const { status, value } = ctx
+    if (status === "error") throw value
+    if (status === "close") return
+    const res = fn(value)
+    isPromise(res) ? res.then(res => nextValue(res, value)) : next(nextValue(res, value))
+  }
+}
+
+export function createListener<T extends readonly any[] = any[], R = any, P = any>(pfs: PF<P>[], fn?: (...args: T) => R): [(...args: T) => Promise<R>, Pipes<P>] {
   const _pfs = [...pfs]
-  if (isFunction(fn)) _pfs.push(map(fn))
+  if (isFunction(fn)) _pfs.push(listenerCallback(fn))
   const pipes = createPipes(_pfs)
 
   async function proxyMethod() {
@@ -34,27 +45,3 @@ export function createListener<T = any, R = any>(pfs: PF[], fn?: (...args: T[]) 
   })
   return [proxyMethod as any, pipes]
 }
-
-/* 
-react
-function useEvent(initValue) {
-  const [value, setValue] = useState(initValue)
-  const [fn] = useRef(createListener(map(setValue)).current
-  return [fn, value]
-}
-const [fn, value] = useEvent(0)
-
-vue
-function useEvent(initValue) {
-  const state = ref(initValue)
-  const [fn] = useRef(createListener(map(v => state.value = v )).current
-  return [fn, state]
-}
-const [fn, value] = useEvent(0)
-
-事件
-function useEvent(initValue, callback) {
-  return createListener(map(callback))[0]
-}
-document.body.addEventListener("click", useEvent(0, console.log))
-*/

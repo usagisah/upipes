@@ -15,13 +15,18 @@ export function callCloseNext(node: PipeNode, value: any) {
       }
 
       const _index = index
-      node.factory(ctx, v => {
-        if (index === _index && v !== undefined) value = v
-      })
+      node.factory(
+        ctx,
+        v => {
+          if (index === _index && v !== undefined) value = v
+        },
+        () => {}
+      )
     } catch (e) {
       console.error(e)
     } finally {
       node = node.next as any
     }
   }
+  return value
 }

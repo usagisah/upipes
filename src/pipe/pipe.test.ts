@@ -268,4 +268,18 @@ describe("other", () => {
     const p = createPipes([], { throwError: true })
     expect(() => p.error("99")).toThrow("99")
   })
+
+  test("set config finalize", () => {
+    const [err, errRestore] = testConsoleError(vi.fn())
+    const fn = vi.fn()
+    createPipes([], { throwError: true, finalize: fn }).next(1).error(2).close(3)
+
+    expect(fn).toHaveBeenCalledTimes(3)
+    expect(fn).toHaveBeenNthCalledWith(1, "success", 1)
+    expect(fn).toHaveBeenNthCalledWith(2, "error", 2)
+    expect(fn).toHaveBeenNthCalledWith(3, "close", 3)
+    expect(err).not.toBeCalled()
+
+    errRestore()
+  })
 })

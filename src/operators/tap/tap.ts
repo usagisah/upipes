@@ -5,8 +5,8 @@ import { empty } from "../empty.js"
 
 export function tap(fn: Func<[PipeContext]>): PF {
   if (!isFunction(fn)) return empty
-  return (ctx, next) => {
+  return (ctx, resolve, reject) => {
     fn(ctx)
-    empty(ctx, next)
+    empty(ctx, resolve, reject)
   }
 }

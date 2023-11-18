@@ -7,7 +7,8 @@ export function catchError(fn: Func<[any]>): PF {
     if (status === "error") {
       let res = fn(value)
       if (isPromise(res)) res = await res
-      return next(res)
+      if (res !== undefined) next(res)
+      return
     }
     next(value)
   }

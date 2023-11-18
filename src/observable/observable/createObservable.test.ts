@@ -169,4 +169,12 @@ describe("observable", () => {
     expect(err).toHaveBeenCalledOnce()
     errRestore()
   })
+
+  test("after skip, always be called", () => {
+    const o = createObservable([(_, next) => next(_.value, { skip: true })]).next(1)
+    const sub = vi.fn()
+    o.subscribe(sub)
+    expect(sub).toBeCalled()
+    expect(sub).toBeCalledWith(1)
+  })
 })

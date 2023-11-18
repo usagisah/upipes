@@ -15,7 +15,7 @@ export function createPipeNext(node: PipeNode, ctx: PipeBuiltinContext) {
     const { forceClose, skip, loop } = options
 
     if (forceClose) return ctx.close()
-    if (skip) return ctx.done(value)
+    if (skip) return ctx.done(status, value), undefined
     if (loop) {
       const { type, value } = ctx.raw
       let _node = node
@@ -24,11 +24,13 @@ export function createPipeNext(node: PipeNode, ctx: PipeBuiltinContext) {
       return
     }
     if (!next) {
+      const err = ctx.done(status, value)
+      if (err === undefined) return
       if (status === "error") {
-        if (ctx.throwError) throw value
-        console.error(value)
+        if (ctx.throwError) throw err
+        console.error(err)
       }
-      return ctx.done(value)
+      return
     }
 
     const pipeNext = createPipeNext(next, ctx)
@@ -41,7 +43,7 @@ export function createPipeNext(node: PipeNode, ctx: PipeBuiltinContext) {
       }
     }
     try {
-      next.factory(pipeContext, pipeNext.bind(null, "success"))
+      next.factory(pipeContext, pipeNext.bind(null, "success"), pipeNext.bind(null, "error"))
     } catch (e) {
       pipeNext("error", e)
     }

@@ -1,5 +1,5 @@
 import { Func } from "../../lib/type.js"
-import { Pipes } from "../../pipe/pipe.type.js"
+import { PipeConfig, Pipes } from "../../pipe/pipe.type.js"
 
 export type SubscribeConfigs = {
   once?: boolean
@@ -25,3 +25,5 @@ export interface Observable<T = any> extends Pipes<T> {
   close: (value?: T) => Observable<T>
   readonly __upipes_Observable__: boolean
 }
+
+export interface ObservableConfig extends PipeConfig {}
