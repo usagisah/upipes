@@ -33,4 +33,17 @@ describe("map", () => {
     o.close()
     expect(fn).not.toBeCalled()
   })
+
+  test("skip return undefined", () => {
+    const pf2 = vi.fn()
+    const o = createPipes([
+      map(v => {
+        v * 10
+      }),
+      pf2
+    ]).next(1)
+
+    expect(o.value()).toBe(1)
+    expect(pf2).not.toBeCalled()
+  })
 })

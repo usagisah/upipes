@@ -3,7 +3,7 @@ import { PF } from "../../pipe.js"
 import { createObservable } from "./createObservable.js"
 
 describe("single param", () => {
-  test("subscribe", () => {
+  test("base subscribe", () => {
     const o = createObservable([nextSuccess()])
     o.next(1)
 
@@ -51,7 +51,7 @@ describe("single param", () => {
 })
 
 describe("object param", () => {
-  test("subscribe", () => {
+  test("base subscribe", () => {
     const o = createObservable([])
     const next = vi.fn()
     const error = vi.fn()
@@ -95,8 +95,8 @@ describe("object param", () => {
   })
 })
 
-describe("observable", () => {
-  test("provider", () => {
+describe("provider", () => {
+  test("lazy call", () => {
     const afterClosed = vi.fn()
     const o = createObservable([], ob => {
       ob.next(1)
@@ -109,6 +109,7 @@ describe("observable", () => {
     const next = vi.fn()
     const error = vi.fn()
     const close = vi.fn()
+
     o.subscribe({ next, error, close })
 
     expect(next).toHaveBeenCalledTimes(2)
@@ -125,6 +126,24 @@ describe("observable", () => {
     expect(o.closed()).toBeTruthy()
   })
 
+  test("every first lazy", () => {
+    const provider = vi.fn()
+    const o = createObservable([], provider)
+
+    o.next(1)
+    expect(provider).not.toBeCalled()
+    const unSub = o.subscribe(() => {})
+    expect(provider).toHaveBeenCalledTimes(1)
+
+    unSub()
+    o.next(1)
+    expect(provider).toHaveBeenCalledTimes(1)
+    o.subscribe(() => {})
+    expect(provider).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe("observable", () => {
   test("get value", () => {
     const o = createObservable([nextSuccess()])
     o.subscribe(v => v)

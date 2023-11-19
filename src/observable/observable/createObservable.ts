@@ -2,24 +2,23 @@ import { isFunction, isPlainObject } from "../../lib/check.js"
 import { CLOSE_ERROR } from "../../pipe/constants.js"
 import { createPipes } from "../../pipe/pipe.js"
 import { PF } from "../../pipe/pipe.type.js"
-import { LinkedList } from "./LinkedList.js"
 import { Observable, ObservableConfig, SubscribeConfigs, SubscribeNext, SubscribeOperates, SubscriberTypes, UnSubscribe } from "./Observable.type.js"
+import { SubscriberManager } from "./Subscribers.js"
 import { CashEmitter, EmitTypes } from "./cashEmitter.js"
 
 export function createObservable<T = any>(pfs: PF[], provider?: ((o: Observable<T>) => any) | null, config?: ObservableConfig): Observable<T> {
-  const subscribers: Record<SubscriberTypes, LinkedList> = { next: new LinkedList(), error: new LinkedList(), close: new LinkedList() }
+  const subscriberManager = new SubscriberManager()
 
   if (!isPlainObject(config)) config = {}
   const pipes = createPipes(pfs, {
     ...config,
     finalize(status, value) {
       const type = status === "success" ? "next" : status
-      const list = subscribers[type]
 
-      if (status === "error" && list.size === 0) throw value
-      list.call(value)
+      if (status === "error" && subscriberManager.getSize("error") === 0) throw value
+      subscriberManager.call(type, value)
       if (status === "close") {
-        for (const type in subscribers) subscribers[type as SubscriberTypes].clear()
+        subscriberManager.clear()
         emitter.clear()
         pendingResolveSize = 0
       }
@@ -40,12 +39,11 @@ export function createObservable<T = any>(pfs: PF[], provider?: ((o: Observable<
 
   function proxyMethod(type: EmitTypes, value: any) {
     if (closed()) return console.error(CLOSE_ERROR), pipes
-    if (subscribers[type].size > 0 || pendingResolveSize > 0) return originMethods[type](value)
+    if (subscriberManager.validSubscribeSize > 0 || pendingResolveSize > 0) return originMethods[type](value)
     emitter.add({ type, value })
     return pipes
   }
 
-  let first = true
   function subscribe<T = any>(next: SubscribeNext<T>, config?: SubscribeConfigs): UnSubscribe
   function subscribe<T = any>(subscribeOperates: SubscribeOperates<T>, config?: SubscribeConfigs): UnSubscribe
   function subscribe(operate: any, config?: SubscribeConfigs): UnSubscribe {
@@ -65,10 +63,11 @@ export function createObservable<T = any>(pfs: PF[], provider?: ((o: Observable<
     const unSubscribe = () => {
       for (const _type in subscribeOperates) {
         const type = _type as SubscriberTypes
-        subscribers[type].remove(subscribeOperates[type])
+        subscriberManager.remove(type, subscribeOperates[type])
       }
     }
 
+    let firstSubscribe = false
     for (const _type in subscribeOperates) {
       const type = _type as SubscriberTypes
       const fn = subscribeOperates[type]
@@ -81,12 +80,14 @@ export function createObservable<T = any>(pfs: PF[], provider?: ((o: Observable<
         if (once) unSubscribe()
       }
       subscribeOperates[type] = subscriber
-      subscribers[type].add(subscriber)
+
+      const res = subscriberManager.add(type, subscriber)
+      if (!firstSubscribe) firstSubscribe = res.firstSubscribe
     }
 
     emitter.emit()
-    if (first) {
-      first = false
+
+    if (firstSubscribe) {
       if (!isFunction(provider)) return unSubscribe
       try {
         provider(pipes as any)

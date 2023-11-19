@@ -18,10 +18,12 @@ describe("catchError", () => {
     expect(o.value()).toBe(1)
   })
 
-  it("不传递 undefined 的结果", async () => {
+  it("skip return undefined", () => {
     const fn = vi.fn()
     const o = createObservable([catchError(() => {}), fn]).error(99)
     o.subscribe(() => {})
+
     expect(fn).not.toBeCalled()
+    expect(o.value()).toBe(99)
   })
 })

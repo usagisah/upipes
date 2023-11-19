@@ -8,9 +8,16 @@ import { createPipeNodes } from "./pipeNode.js"
 
 export * from "./pipe.type.js"
 
-export function createPipes<T = any>(pfs: PF<T>[], config?: PipeConfig): Pipes {
+export function createPipes<T = any>(pfs: PF<T>[]): Pipes 
+export function createPipes<T = any>(pfs: PF<T>[], finalize: PipeConfigFinalize): Pipes 
+export function createPipes<T = any>(pfs: PF<T>[], config: PipeConfig): Pipes 
+export function createPipes<T = any>(pfs: PF<T>[], option?: any): Pipes {
   if (!Array.isArray(pfs)) throw "createPipes.params[0] 管道节点参数必须是一个数组"
-  if (!isPlainObject(config)) config = {}
+
+  let config: PipeConfig = option
+  if (isFunction(option)) config = { finalize: option }
+  else if (!isPlainObject(option)) config = {}
+
   const node = createPipeNodes(pfs)
 
   let pipeValue: T | undefined = undefined
@@ -21,7 +28,7 @@ export function createPipes<T = any>(pfs: PF<T>[], config?: PipeConfig): Pipes {
     pipeValue = _value
     for (const resolve of pipeResolvePending) resolve(_value)
     try {
-      if (isFunction(config!.finalize)) config!.finalize(status, value)
+      if (isFunction(config.finalize)) config.finalize(status, value)
       else if (status === "error") throw value
     } catch (e) {
       return e
@@ -36,7 +43,7 @@ export function createPipes<T = any>(pfs: PF<T>[], config?: PipeConfig): Pipes {
 
   const callPipeNext = (type: PipeContextStatus, value?: any) => {
     if (node.closed) return console.error(CLOSE_ERROR)
-    createPipeNext(node, { throwError: !!config!.throwError, close, done, raw: { type, value } })(type, value)
+    createPipeNext(node, { throwError: !!config.throwError, close, done, raw: { type, value } })(type, value)
   }
 
   const pipes: Pipes = {

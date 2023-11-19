@@ -264,12 +264,12 @@ describe("other", () => {
     expect(pf).toHaveBeenCalledTimes(3)
   })
 
-  test("set config throwError", () => {
+  test("set obj-config throwError", () => {
     const p = createPipes([], { throwError: true })
     expect(() => p.error("99")).toThrow("99")
   })
 
-  test("set config finalize", () => {
+  test("set obj-config finalize", () => {
     const [err, errRestore] = testConsoleError(vi.fn())
     const fn = vi.fn()
     createPipes([], { throwError: true, finalize: fn }).next(1).error(2).close(3)
@@ -281,5 +281,11 @@ describe("other", () => {
     expect(err).not.toBeCalled()
 
     errRestore()
+  })
+
+  test("set single-config finalize", () => {
+    const fn = vi.fn()
+    createPipes([], fn).next(1)
+    expect(fn).toBeCalled()
   })
 })

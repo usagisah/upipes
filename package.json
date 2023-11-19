@@ -9,7 +9,10 @@
     "build": "node scribes/build.js",
     "format": "prettier --write src/*",
     "coverage": "vitest run --coverage",
-    "dev": "node scribes/dev.js"
+    "dev": "node scribes/dev.js",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "exports": {
     ".": "./index.js",
@@ -30,6 +33,7 @@
     "prettier-plugin-packagejson": "^2.4.6",
     "typescript": "^5.2.2",
     "vite": "^4.5.0",
+    "vitepress": "1.0.0-rc.28",
     "vitest": "^0.34.6"
   }
 }
