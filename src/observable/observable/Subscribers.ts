@@ -23,7 +23,7 @@ export class SubscriberManager {
   add(type: SubscriberTypes, value: any) {
     const size = this.validSubscribeSize
     if (type !== "close") this.validSubscribeSize++
-    
+
     return { firstSubscribe: size === 0, node: this[type].add(value) }
   }
 }

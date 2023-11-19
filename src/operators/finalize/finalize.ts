@@ -5,6 +5,6 @@ export function finalize(fn: Func<[any]>): PF {
   return async ({ status, value }, next) => {
     if (status === "success") return next(value)
     if (status === "error") throw value
-    fn(value)
+    next(fn(value))
   }
 }

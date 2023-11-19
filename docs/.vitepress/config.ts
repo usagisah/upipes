@@ -22,10 +22,12 @@ export default defineConfig({
       {
         text: "管道流-pipe",
         items: [
-          { text: "createPipes" },
+          { text: "创建 createPipes", link: "/pipe/createPipes" },
+          { text: "管道函数 pf", link: "/pipe/pf" },
+          { text: "完整的使用", link: "/pipe/useCreatePipes" },
         ]
       },
-      { text: "功能选择清单" },
+      { text: "功能选择清单", link: "/recommend" },
       {
         text: "观察者-observable",
         items: [{ text: "createObservable" }, { text: "createListener" }]
@@ -37,20 +39,28 @@ export default defineConfig({
       {
         text: "操作符-operators",
         items: [
-          { text: "buffer" }, 
-          { text: "debounce" },
-          { text: "empty.ts" },
-          { text: "finalize" },
-          { text: "mergeMap" },
-          { text: "take" },
-          { text: "throttle" },
-          { text: "catchError" },
-          { text: "delay" },
-          { text: "filter" },
-          { text: "map" },
+          { text: "catchError", link: "/operators/catchError" },
+          { text: "map", link: "/operators/map" },
+          { text: "finalize", link: "/operators/finalize" },
+          { text: "buffer", link: "/operators/buffer" }, 
+          { text: "tap", link: "/operators/tap" }, 
+          { text: "filter", link: "/operators/filter" },
+          { text: "take", link: "/operators/take" },
           { text: "retry" },
-          { text: "tap" }, 
-          { text: "timeoutMap" }
+          { text: "debounce" },
+          { text: "throttle" },
+          { text: "mergeMap" },
+          { text: "timeoutMap" },
+          { text: "delay" },
+          { text: "empty" }
+        ]
+      },
+      {
+        text: "实战 demo",
+        items: [
+          { text: "接口请求" },
+          { text: "集成 vue" },
+          { text: "集成 react" },
         ]
       },
       {

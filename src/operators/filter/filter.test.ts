@@ -1,3 +1,4 @@
+import { setTimeout } from "timers/promises"
 import { applySuccess, silentConsoleError } from "../../lib/test.js"
 import { createPipes } from "../../pipe.js"
 import { filter } from "./filter.js"
@@ -25,5 +26,12 @@ describe("filter", () => {
     expect(p).not.toBeCalled()
 
     errRestore()
+  })
+
+  test("unWrapper promise", async () => {
+    const pf2 = vi.fn()
+    createPipes([filter(v => Promise.resolve(v)), pf2]).next(true).next(false)
+    await setTimeout(5)
+    expect(pf2).toHaveBeenCalledOnce()
   })
 })

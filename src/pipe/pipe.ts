@@ -8,9 +8,9 @@ import { createPipeNodes } from "./pipeNode.js"
 
 export * from "./pipe.type.js"
 
-export function createPipes<T = any>(pfs: PF<T>[]): Pipes 
-export function createPipes<T = any>(pfs: PF<T>[], finalize: PipeConfigFinalize): Pipes 
-export function createPipes<T = any>(pfs: PF<T>[], config: PipeConfig): Pipes 
+export function createPipes<T = any>(pfs: PF<T>[]): Pipes
+export function createPipes<T = any>(pfs: PF<T>[], finalize: PipeConfigFinalize): Pipes
+export function createPipes<T = any>(pfs: PF<T>[], config: PipeConfig): Pipes
 export function createPipes<T = any>(pfs: PF<T>[], option?: any): Pipes {
   if (!Array.isArray(pfs)) throw "createPipes.params[0] 管道节点参数必须是一个数组"
 

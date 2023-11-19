@@ -1,4 +1,5 @@
 import { createObservable } from "../../observable/observable/createObservable.js"
+import { createPipes } from "../../pipe/pipe.js"
 import { catchError } from "./catchError.js"
 
 describe("catchError", () => {
@@ -19,11 +20,9 @@ describe("catchError", () => {
   })
 
   it("skip return undefined", () => {
-    const fn = vi.fn()
-    const o = createObservable([catchError(() => {}), fn]).error(99)
-    o.subscribe(() => {})
-
-    expect(fn).not.toBeCalled()
-    expect(o.value()).toBe(99)
+    const pf2 = vi.fn()
+    const value = createPipes([catchError(), pf2]).error(99).value()
+    expect(value).toBe(99)
+    expect(pf2).not.toBeCalled()
   })
 })
