@@ -2,6 +2,9 @@ import { isFunction, isNumber } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
 import { PF, PipeContext } from "../../pipe/pipe.type.js"
 
+export function retry(): PF
+export function retry(count?: number): PF
+export function retry(check: Func<[PipeContext], boolean>): PF
 export function retry(countOrCheck?: number | Func<[PipeContext], boolean>): PF {
   let _max = 0
   let _count = 0

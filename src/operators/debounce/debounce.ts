@@ -2,6 +2,9 @@ import { isFunction, isNumber } from "../../lib/check.js"
 import { Func } from "../../lib/type.js"
 import { PF } from "../../pipe/pipe.type.js"
 
+export function debounce(): PF
+export function debounce(gap: number): PF
+export function debounce(fn: Func<[any], number>): PF
 export function debounce(fnOrGap?: Func<[any], number> | number): PF {
   let gap = 0
   let getTimeout: any = () => gap

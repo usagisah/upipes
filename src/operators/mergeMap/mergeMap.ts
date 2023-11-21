@@ -4,6 +4,9 @@ import { createObservable } from "../../observable/observable/createObservable.j
 import { PF, PipeNext } from "../../pipe/pipe.type.js"
 import { map } from "../map/map.js"
 
+export function mergeMap(thenFn: Func<[any]>): PF
+export function mergeMap(thenFn: Func<[any]>, limit: number): PF
+export function mergeMap(thenFn: Func<[any]>, limitFn: Func<[number], boolean>): PF
 export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], boolean>): PF {
   let max = 1
   let parallel = 0
@@ -13,23 +16,24 @@ export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], bo
 
   let close = false
   let pending: any[] = []
-  function tryNext(mainNext: PipeNext) {
+  function tryNext(mainNext: PipeNext, reject: PipeNext) {
     if (close || pending.length === 0) return
     if (++parallel > max) return parallel--
 
-    const o = createObservable([map(thenFn)], null, { throwError: true })
+    const o = createObservable([map(thenFn)], null)
     o.resolve()
       .then(mainNext)
+      .catch(reject)
       .finally(() => {
         parallel--
         o.close()
-        tryNext(mainNext)
+        tryNext(mainNext, reject)
       })
     o.next(pending.shift())
-    tryNext(mainNext)
+    tryNext(mainNext, reject)
   }
 
-  return (ctx, next) => {
+  return (ctx, next, reject) => {
     const { status, value } = ctx
     if (status === "error") throw value
     if (status === "close") {
@@ -40,6 +44,6 @@ export function mergeMap(thenFn: Func<[any]>, limit?: number | Func<[number], bo
 
     pending.push(value)
     if (checkLimit(parallel + 1)) return
-    tryNext(next)
+    tryNext(next, reject)
   }
 }

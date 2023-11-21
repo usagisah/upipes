@@ -10,8 +10,9 @@ type Config = {
   forceClose?: boolean
 }
 
-export function timeoutMap(fn: Func<[any]>, timeout?: number): PF
-export function timeoutMap(fn: Func<[any]>, config?: Config): PF
+export function timeoutMap(fn: Func<[any]>): PF
+export function timeoutMap(fn: Func<[any]>, timeout: number): PF
+export function timeoutMap(fn: Func<[any]>, config: Config): PF
 export function timeoutMap(fn: Func<[any]>, timeoutOrConfig?: number | Config): PF {
   let _timeout = 10000
   let _throwError: string | null = null

@@ -1,5 +1,7 @@
 # buffer
 
+## 效果
+
 用户缓存前边推送的值，当达到指定数量时，会将值拼成数组，继续向后推送
 
 比如发送了 4 个值 `1,2,3,4`，当`buffer(2)` 时，相当于会分成 2 组
@@ -8,13 +10,21 @@
 
 二组 `[3,4]`
 
-
-
 如果中途流被关闭了，则会发送剩下所有的值
 
 
 
-## 使用 demo
+## 参数
+
+```ts
+function buffer(count?: number): PF
+```
+
+接收一个代表压缩的次数的数量
+
+
+
+## demo
 
 ```ts
 const pipes = createPipes([buffer(2), ctx => p2(console.log)])
