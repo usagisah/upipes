@@ -30,7 +30,9 @@ describe("filter", () => {
 
   test("unWrapper promise", async () => {
     const pf2 = vi.fn()
-    createPipes([filter(v => Promise.resolve(v)), pf2]).next(true).next(false)
+    createPipes([filter(v => Promise.resolve(v)), pf2])
+      .next(true)
+      .next(false)
     await setTimeout(5)
     expect(pf2).toHaveBeenCalledOnce()
   })
