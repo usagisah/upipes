@@ -19,6 +19,7 @@ export default defineConfig({
     sidebar: [
       { text: "简介", link: "/introduction" },
       { text: "快速开始", link: "/quickStart" },
+      { text: "创造的原因和理念", link: "/reason" },
       {
         text: "管道流-pipe",
         items: [
