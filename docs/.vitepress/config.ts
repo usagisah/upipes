@@ -12,8 +12,8 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: "Home", link: "/" },
-      { text: "Examples", link: "/markdown-examples" }
+      { text: "首页", link: "/" },
+      { text: "快速开始", link: "/quickStart" }
     ],
 
     sidebar: [
@@ -28,7 +28,6 @@ export default defineConfig({
           { text: "完整的使用", link: "/pipe/useCreatePipes" }
         ]
       },
-      { text: "功能选择清单", link: "/recommend" },
       {
         text: "观察者-observable",
         items: [
@@ -39,10 +38,11 @@ export default defineConfig({
       {
         text: "创建者-builder",
         items: [
-          { text: "defer", link: "defer" },
-          { text: "fromAll", link: "fromAll" },
-          { text: "interval", link: "interval" },
-          { text: "mergeAll", link: "mergeAll" }
+          { text: "of", link: "builder/of" },
+          { text: "defer", link: "builder/defer" },
+          { text: "interval", link: "builder/interval" },
+          { text: "fromAll", link: "builder/fromAll" },
+          { text: "mergeAll", link: "builder/mergeAll" }
         ]
       },
       {
@@ -63,24 +63,24 @@ export default defineConfig({
           { text: "delay", link: "/operators/delay" },
           { text: "empty", link: "/operators/empty" }
         ]
-      },
-      {
-        text: "实战 demo",
-        items: [{ text: "接口请求" }, { text: "集成 vue" }, { text: "集成 react" }]
-      },
-      {
-        text: "Examples",
-        items: [
-          { text: "Markdown Examples", link: "/markdown-examples" },
-          { text: "Runtime API Examples", link: "/api-examples" }
-        ]
       }
+      // {
+      //   text: "实战 demo",
+      //   items: [{ text: "接口请求" }, { text: "集成 vue" }, { text: "集成 react" }]
+      // },
+      // {
+      //   text: "Examples",
+      //   items: [
+      //     { text: "Markdown Examples", link: "/markdown-examples" },
+      //     { text: "Runtime API Examples", link: "/api-examples" }
+      //   ]
+      // }
     ],
 
-    socialLinks: [{ icon: "github", link: "https://github.com/vuejs/vitepress" }],
+    // socialLinks: [{ icon: "github", link: "https://github.com/vuejs/vitepress" }],
 
     footer: {
-      message: "Released under the MIT License."
+      message: "豫ICP备2023024975号-1"
     }
   }
 })
