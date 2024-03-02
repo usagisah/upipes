@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
   "scripts": {
     "test": "vitest",
     "build": "node scribes/build.js",
@@ -14,15 +13,23 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
+  "files": [
+    "dist"
+  ],
   "exports": {
-    ".": "./index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./*": {
       "types": "./*.d.ts",
       "default": "./*.js"
     }
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "upipes"
+  ],
+  "author": "顾弦笙/usagisah",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.9.0",
