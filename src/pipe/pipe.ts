@@ -8,10 +8,19 @@ import { createPipeNodes } from "./pipeNode.js"
 
 export * from "./pipe.type.js"
 
-export function createPipes<T = any>(pfs: PF<T>[]): Pipes
-export function createPipes<T = any>(pfs: PF<T>[], finalize: PipeConfigFinalize): Pipes
-export function createPipes<T = any>(pfs: PF<T>[], config: PipeConfig): Pipes
-export function createPipes<T = any>(pfs: PF<T>[], option?: any): Pipes {
+export function createPipes<R = any>(pfs: never[], option?: PipeConfigFinalize | PipeConfig): Pipes<R, R>
+export function createPipes<A = any, R = A>(pfs: [PF<A, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, R = B>(pfs: [PF<A, B>, PF<B, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, R = C>(pfs: [PF<A, B>, PF<B, C>, PF<C, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, D = C, R = D>(pfs: [PF<A, B>, PF<B, C>, PF<C, D>, PF<D, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, D = C, E = D, R = E>(pfs: [PF<A, B>, PF<B, C>, PF<C, D>, PF<D, E>, PF<E, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, D = C, E = D, F = E, R = F>(pfs: [PF<A, B>, PF<B, C>, PF<C, D>, PF<D, E>, PF<E, F>, PF<F, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, D = C, E = D, F = E, G = F, R = G>(pfs: [PF<A, B>, PF<B, C>, PF<C, D>, PF<D, E>, PF<E, F>, PF<F, G>, PF<G, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, D = C, E = D, F = E, G = F, H = G, R = H>(pfs: [PF<A, B>, PF<B, C>, PF<C, D>, PF<D, E>, PF<E, F>, PF<F, G>, PF<G, H>, PF<H, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, D = C, E = D, F = E, G = F, H = G, I = H, R = I>(pfs: [PF<A, B>, PF<B, C>, PF<C, D>, PF<D, E>, PF<E, F>, PF<F, G>, PF<G, H>, PF<H, I>, PF<I, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes<A = any, B = A, C = B, D = C, E = D, F = E, G = F, H = G, I = H, J = I, R = J>(pfs: [PF<A, B>, PF<B, C>, PF<C, D>, PF<D, E>, PF<E, F>, PF<F, G>, PF<G, H>, PF<H, I>, PF<I, J>, PF<J, R>], option?: PipeConfigFinalize | PipeConfig): Pipes<A, R>
+export function createPipes(pfs: PF<any, any>[], option?: PipeConfigFinalize | PipeConfig): Pipes<any, any>
+export function createPipes(pfs: any[], option?: any): any {
   if (!Array.isArray(pfs)) throw "createPipes.params[0] 管道节点参数必须是一个数组"
 
   let config: PipeConfig = option
@@ -20,7 +29,7 @@ export function createPipes<T = any>(pfs: PF<T>[], option?: any): Pipes {
 
   const node = createPipeNodes(pfs)
 
-  let pipeValue: T | undefined = undefined
+  let pipeValue: any
   let pipeResolvePending: Func[] = []
 
   const done: PipeConfigFinalize = (status, value) => {
